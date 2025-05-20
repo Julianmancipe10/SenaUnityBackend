@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
 import multer from 'multer';
 import path from 'path';
+import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -61,6 +62,14 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
+    // Obtener permisos del usuario
+    const [permisosRows] = await pool.query(`
+      SELECT p.Nombre FROM UsuarioPermisos up
+      JOIN permiso p ON up.permiso_ID_Permiso = p.ID_Permiso
+      WHERE up.Usuario_idUsuario = ? AND up.FechaLimite > NOW()
+    `, [user.idUsuario]);
+    const permisos = permisosRows.map(p => p.Nombre);
+
     const token = jwt.sign(
       { 
         id: user.idUsuario,
@@ -80,7 +89,8 @@ router.post('/login', async (req, res) => {
         nombre: user.Nombre,
         apellido: user.Apellido,
         correo: user.Correo,
-        rol: user.Rol
+        rol: user.Rol,
+        permisos
       }
     });
   } catch (error) {
@@ -123,7 +133,7 @@ router.post('/register', upload.single('imagen'), async (req, res) => {
 
       // Insertar nuevo usuario
       const [result] = await connection.query(
-        'INSERT INTO Usuario (Nombre, Apellido, Correo, Documento, Passaword, Imagen) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO Usuario (Nombre, Apellido, Correo, Documento, Passaword, Foto) VALUES (?, ?, ?, ?, ?, ?)',
         [nombre, apellido, correo, documento, hashedPassword, imagen]
       );
 
@@ -171,6 +181,79 @@ router.post('/register', upload.single('imagen'), async (req, res) => {
   } catch (error) {
     console.error('Error en registro:', error);
     res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
+
+// Actualizar perfil
+router.put('/profile', verifyToken, upload.single('imagen'), async (req, res) => {
+  const userId = req.user.id;
+
+  const { nombre, apellido, correo, documento, password } = req.body;
+  const imagen = req.file ? req.file.path : null;
+
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Verificar si el correo o documento ya existen para otro usuario
+    const [existingUsers] = await connection.query(
+      'SELECT * FROM Usuario WHERE (Correo = ? OR Documento = ?) AND idUsuario != ?',
+      [correo, documento, userId]
+    );
+
+    if (existingUsers.length > 0) {
+      throw new Error('El correo o documento ya está en uso por otro usuario');
+    }
+
+    // Construir la consulta de actualización
+    let updateQuery = 'UPDATE Usuario SET Nombre = ?, Apellido = ?, Correo = ?, Documento = ?';
+    let queryParams = [nombre, apellido, correo, documento];
+
+    // Si hay una nueva contraseña, actualizarla
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateQuery += ', Passaword = ?';
+      queryParams.push(hashedPassword);
+    }
+
+    // Si hay una nueva imagen, actualizarla
+    if (imagen) {
+      updateQuery += ', Foto = ?';
+      queryParams.push(imagen);
+    }
+
+    updateQuery += ' WHERE idUsuario = ?';
+    queryParams.push(userId);
+
+    // Ejecutar la actualización
+    await connection.query(updateQuery, queryParams);
+
+    // Obtener el usuario actualizado
+    const [updatedUser] = await connection.query(
+      'SELECT u.*, r.Rol FROM Usuario u LEFT JOIN TipoUsuario t ON u.idUsuario = t.Usuario_idUsuario LEFT JOIN Roles r ON t.Roles_idUsuarioRoll = r.idUsuarioRoll WHERE u.idUsuario = ?',
+      [userId]
+    );
+
+    await connection.commit();
+
+    res.json({
+      message: 'Perfil actualizado exitosamente',
+      user: {
+        id: updatedUser[0].idUsuario,
+        nombre: updatedUser[0].Nombre,
+        apellido: updatedUser[0].Apellido,
+        correo: updatedUser[0].Correo,
+        documento: updatedUser[0].Documento,
+        rol: updatedUser[0].Rol,
+        foto: updatedUser[0].Foto
+      }
+    });
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    if (connection) connection.release();
   }
 });
 

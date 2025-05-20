@@ -9,6 +9,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import faqRoute from './routes/faq.js';
+import permissionsRoutes from './routes/permissions.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -32,6 +33,7 @@ app.use('/uploads', express.static(join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/faq', faqRoute);
+app.use('/api/permissions', permissionsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

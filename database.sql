@@ -116,6 +116,38 @@ CREATE TABLE IF NOT EXISTS senaunity.permiso (
   PRIMARY KEY (ID_Permiso))
 ENGINE = InnoDB;
 
+-- Insertar permisos básicos
+INSERT INTO senaunity.permiso (Nombre) VALUES 
+('crear_publicacion'),
+('editar_publicacion'),
+('eliminar_publicacion'),
+('ver_publicacion'),
+('crear_usuario'),
+('editar_usuario'),
+('eliminar_usuario'),
+('ver_usuario'),
+('asignar_roles'),
+('ver_roles'),
+('asignar_permisos'),
+('ver_permisos');
+
+-- Insertar usuario administrador
+INSERT INTO senaunity.Usuario (Nombre, Apellido, Correo, Documento, Passaword) VALUES 
+('Admin', 'Sistema', 'admin@senaunity.com', '1234567890', '$2b$10$Jq2ACmT312MfWc8Kkaq8POOF0qtZjWsP2eqTp9TDQFpi5Zm4kP.dW');
+
+-- Obtener el ID del usuario administrador y el rol de administrador
+SET @admin_id = LAST_INSERT_ID();
+SET @admin_rol_id = (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'Administrador');
+
+-- Asignar rol de administrador
+INSERT INTO senaunity.TipoUsuario (Tipo, Usuario_idUsuario, Roles_idUsuarioRoll) VALUES 
+('3', @admin_id, @admin_rol_id);
+
+-- Asignar todos los permisos al administrador
+INSERT INTO senaunity.UsuarioPermisos (FechaLimite, permiso_ID_Permiso, Usuario_idUsuario)
+SELECT '2099-12-31', ID_Permiso, @admin_id
+FROM senaunity.permiso;
+
 -- -----------------------------------------------------
 -- Table senaunity.UsuarioPermisos
 -- -----------------------------------------------------
