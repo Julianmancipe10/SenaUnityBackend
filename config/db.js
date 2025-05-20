@@ -1,4 +1,4 @@
-const mysql = require('mysql2');
+import mysql from 'mysql2';
 
 const pool = mysql.createPool({
     host: '127.0.0.1',
@@ -57,4 +57,4 @@ pool.on('error', (err) => {
     }
 });
 
-module.exports = pool.promise(); 
+export default pool.promise(); 
