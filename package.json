@@ -19,7 +19,9 @@
     "jsonwebtoken": "^9.0.0",
     "multer": "^2.0.0",
     "mysql2": "^3.2.0",
-    "openai": "latest"
+    "node-cache": "^5.1.2",
+    "openai": "latest",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

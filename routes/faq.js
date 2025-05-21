@@ -2,14 +2,40 @@ import express from "express";
 import { AzureOpenAI } from "openai";
 import rateLimit from 'express-rate-limit';
 import dotenv from "dotenv";
+import NodeCache from 'node-cache';
+import winston from 'winston';
+
 dotenv.config();
 
 const router = express.Router();
 
+// Configuración del logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+
+// Configuración de caché
+const cache = new NodeCache({ stdTTL: 3600 }); // 1 hora de TTL
+
 // Configuración de rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100 // límite de 100 peticiones por ventana
+  max: 100, // límite de 100 peticiones por ventana
+  message: 'Demasiadas peticiones desde esta IP, por favor intente más tarde.'
 });
 
 // Configuración de Azure OpenAI
@@ -19,10 +45,16 @@ const apiVersion = "2024-04-01-preview";
 const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
 const modelName = process.env.AZURE_OPENAI_MODEL_NAME;
 
-console.log("endpoint:", endpoint, "apiKey:", apiKey, "deployment:", deployment, "modelName:", modelName);
+logger.info("Configuración de OpenAI cargada", {
+  endpoint,
+  deployment,
+  modelName,
+  apiVersion
+});
 
 if (!endpoint || !apiKey || !deployment || !modelName) {
-  throw new Error("Faltan variables de entorno ");
+  logger.error("Faltan variables de entorno críticas");
+  throw new Error("Faltan variables de entorno críticas para Azure OpenAI");
 }
 
 const options = { endpoint, apiKey, deployment, apiVersion };
@@ -31,43 +63,94 @@ const client = new AzureOpenAI(options);
 // Middleware de validación
 const validateQuestion = (req, res, next) => {
   const { question } = req.body;
+  
   if (!question || question.trim().length === 0) {
     return res.status(400).json({ error: "La pregunta no puede estar vacía" });
   }
+  
   if (question.length > 500) {
-    return res.status(400).json({ error: "La pregunta excede el límite de caracteres" });
+    return res.status(400).json({ error: "La pregunta excede el límite de 500 caracteres" });
   }
+
+  // Sanitización básica
+  req.body.question = question.trim();
   next();
 };
 
+// Función para generar la clave de caché
+const getCacheKey = (question, context = "") => {
+  return `${question.toLowerCase()}_${context.slice(-100)}`;
+};
+
 router.post("/", limiter, validateQuestion, async (req, res) => {
-  const { question } = req.body;
+  const { question, context = "" } = req.body;
+  const cacheKey = getCacheKey(question, context);
 
   try {
+    // Verificar caché
+    const cachedResponse = cache.get(cacheKey);
+    if (cachedResponse) {
+      logger.info("Respuesta recuperada de caché", { question });
+      return res.json({ 
+        answer: cachedResponse,
+        cached: true,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Preparar el sistema de mensajes con contexto
+    const messages = [
+      { 
+        role: "system", 
+        content: `Eres un asistente de preguntas frecuentes del sistema SenaUnity. 
+                 Proporciona respuestas claras, concisas y útiles.
+                 Mantén un tono profesional pero amigable.` 
+      }
+    ];
+
+    // Agregar contexto si existe
+    if (context) {
+      messages.push({ role: "system", content: `Contexto previo:\n${context}` });
+    }
+
+    // Agregar la pregunta actual
+    messages.push({ role: "user", content: question });
+
     const response = await client.chat.completions.create({
-      messages: [
-        { 
-          role: "system", 
-          content: "Eres un asistente de preguntas frecuentes del sistema SenaUnity. Proporciona respuestas claras y concisas." 
-        },
-        { role: "user", content: question }
-      ],
+      messages,
       max_tokens: 4096,
       temperature: 0.7,
       top_p: 1,
       model: modelName
     });
 
-    if (response?.error !== undefined && response.status !== "200") {
-      throw response.error;
+    if (!response.choices || !response.choices[0]) {
+      throw new Error("Respuesta inválida de Azure OpenAI");
     }
 
+    const answer = response.choices[0].message.content;
+
+    // Guardar en caché
+    cache.set(cacheKey, answer);
+
+    logger.info("Respuesta generada exitosamente", { 
+      question,
+      hasContext: !!context,
+      tokens: response.usage?.total_tokens
+    });
+
     res.json({ 
-      answer: response.choices[0].message.content,
+      answer,
+      cached: false,
       timestamp: new Date().toISOString()
     });
   } catch (err) {
-    console.error("Error en Azure OpenAI:", err);
+    logger.error("Error en Azure OpenAI", { 
+      error: err.message,
+      question,
+      stack: err.stack
+    });
+
     if (err.statusCode) {
       res.status(err.statusCode).json({ 
         error: "Error en el servicio de Azure OpenAI",
@@ -76,7 +159,7 @@ router.post("/", limiter, validateQuestion, async (req, res) => {
     } else {
       res.status(500).json({ 
         error: "Error interno del servidor",
-        message: err.message 
+        message: "Hubo un problema al procesar tu pregunta. Por favor, intenta de nuevo."
       });
     }
   }
