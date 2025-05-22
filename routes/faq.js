@@ -41,18 +41,16 @@ const limiter = rateLimit({
 // Configuración de Azure OpenAI
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const apiKey = process.env.AZURE_OPENAI_KEY;
-const apiVersion = "2024-04-01-preview";
+const apiVersion = process.env.AZURE_OPENAI_API_VERSION;
 const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
-const modelName = process.env.AZURE_OPENAI_MODEL_NAME;
 
 logger.info("Configuración de OpenAI cargada", {
   endpoint,
   deployment,
-  modelName,
   apiVersion
 });
 
-if (!endpoint || !apiKey || !deployment || !modelName) {
+if (!endpoint || !apiKey || !deployment || !apiVersion) {
   logger.error("Faltan variables de entorno críticas");
   throw new Error("Faltan variables de entorno críticas para Azure OpenAI");
 }
@@ -118,10 +116,12 @@ router.post("/", limiter, validateQuestion, async (req, res) => {
 
     const response = await client.chat.completions.create({
       messages,
-      max_tokens: 4096,
+      max_tokens: 8192,
       temperature: 0.7,
-      top_p: 1,
-      model: modelName
+      top_p: 0.95,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      stop: null
     });
 
     if (!response.choices || !response.choices[0]) {
