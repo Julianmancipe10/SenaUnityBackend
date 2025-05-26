@@ -41,18 +41,23 @@ const limiter = rateLimit({
 // Configuración de Azure OpenAI
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const apiKey = process.env.AZURE_OPENAI_KEY;
-const apiVersion = process.env.AZURE_OPENAI_API_VERSION;
+const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
 const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
 
 logger.info("Configuración de OpenAI cargada", {
-  endpoint,
-  deployment,
-  apiVersion
+  endpoint: endpoint ? 'Configurado' : 'No configurado',
+  deployment: deployment ? 'Configurado' : 'No configurado',
+  apiVersion: apiVersion ? 'Configurado' : 'No configurado'
 });
 
-if (!endpoint || !apiKey || !deployment || !apiVersion) {
-  logger.error("Faltan variables de entorno críticas");
-  throw new Error("Faltan variables de entorno críticas para Azure OpenAI");
+if (!endpoint || !apiKey || !deployment) {
+  const missingVars = [];
+  if (!endpoint) missingVars.push('AZURE_OPENAI_ENDPOINT');
+  if (!apiKey) missingVars.push('AZURE_OPENAI_KEY');
+  if (!deployment) missingVars.push('AZURE_OPENAI_DEPLOYMENT_NAME');
+  
+  logger.error("Faltan variables de entorno críticas", { missingVars });
+  throw new Error(`Faltan variables de entorno críticas para Azure OpenAI: ${missingVars.join(', ')}`);
 }
 
 const options = { endpoint, apiKey, deployment, apiVersion };

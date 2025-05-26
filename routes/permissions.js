@@ -1,5 +1,5 @@
 import express from 'express';
-import pool from '../config/db.js';
+import { pool } from '../config/db.js';
 import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 // Obtener todos los permisos
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const [permisos] = await pool.query('SELECT * FROM permiso');
+    const [permisos] = await pool.promise().query('SELECT * FROM permiso');
     res.json(permisos);
   } catch (error) {
     console.error('Error al obtener permisos:', error);
@@ -18,7 +18,7 @@ router.get('/', verifyToken, async (req, res) => {
 // Asignar permisos a un usuario
 router.post('/assign', verifyToken, async (req, res) => {
   const { userId, permisos, fechaLimite } = req.body;
-  const connection = await pool.getConnection();
+  const connection = await pool.promise().getConnection();
 
   try {
     await connection.beginTransaction();
@@ -51,7 +51,7 @@ router.post('/assign', verifyToken, async (req, res) => {
 // Obtener permisos de un usuario
 router.get('/user/:userId', verifyToken, async (req, res) => {
   try {
-    const [permisos] = await pool.query(`
+    const [permisos] = await pool.promise().query(`
       SELECT p.*, up.FechaLimite 
       FROM UsuarioPermisos up 
       JOIN permiso p ON up.permiso_ID_Permiso = p.ID_Permiso 
@@ -68,7 +68,7 @@ router.get('/user/:userId', verifyToken, async (req, res) => {
 // Verificar si un usuario tiene un permiso específico
 router.get('/check/:userId/:permisoId', verifyToken, async (req, res) => {
   try {
-    const [permisos] = await pool.query(`
+    const [permisos] = await pool.promise().query(`
       SELECT * FROM UsuarioPermisos 
       WHERE Usuario_idUsuario = ? 
       AND permiso_ID_Permiso = ? 
