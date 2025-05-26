@@ -1,11 +1,14 @@
 import mysql from 'mysql2';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const pool = mysql.createPool({
-    host: '127.0.0.1',
-    port: 3306,
-    user: 'root',
-    password: 'Jul1anmanc1pe777',
-    database: 'senaunity',
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME || 'senaunity',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
@@ -28,7 +31,7 @@ pool.getConnection((err, connection) => {
         FROM information_schema.tables 
         WHERE table_schema = 'senaunity' 
         AND table_name IN ('Usuario', 'Roles', 'TipoUsuario')
-    `, (err, results) => {
+    `, [process.env.DB_NAME || 'senaunity'], (err, results) => {
         if (err) {
             console.error('Error al verificar tablas:', err);
             return;
@@ -57,4 +60,4 @@ pool.on('error', (err) => {
     }
 });
 
-export default pool.promise(); 
+export default pool; 
