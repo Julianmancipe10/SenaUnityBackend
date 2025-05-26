@@ -31,12 +31,13 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
 // Routes
+app.get('/', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'API is running' });
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/faq', faqRoute);
 app.use('/api/permissions', permissionsRoutes);
-
-
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
