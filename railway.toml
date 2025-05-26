@@ -1,0 +1,13 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm ci --omit=dev"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 10
+
+[phases.setup]
+nixPkgs = ["nodejs_18", "npm-9_x"] 

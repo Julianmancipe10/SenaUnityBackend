@@ -4,26 +4,33 @@
   "description": "Backend para SenaUnity",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "postinstall": "npm run build",
+    "build": "echo 'Build step completed'",
+    "audit-fix": "npm audit fix --force"
   },
   "dependencies": {
-    "@azure/identity": "latest",
-    "bcrypt": "^6.0.0",
+    "@azure/identity": "^3.3.0",
+    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
-    "jsonwebtoken": "^9.0.0",
-    "multer": "^2.0.0",
-    "mysql2": "^3.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.6.5",
     "node-cache": "^5.1.2",
-    "openai": "latest",
-    "winston": "^3.17.0"
+    "openai": "^4.20.1",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.0.2"
   }
 }
