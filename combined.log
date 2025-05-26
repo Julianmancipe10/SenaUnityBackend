@@ -34,3 +34,4 @@
 {"apiVersion":"2025-01-01-preview","deployment":"model-router","endpoint":"https://julia-mazd101h-eastus2.openai.azure.com/","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-26T12:36:01.089Z"}
 {"apiVersion":"2025-01-01-preview","deployment":"model-router","endpoint":"https://julia-mazd101h-eastus2.openai.azure.com/","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-26T12:41:00.144Z"}
 {"apiVersion":"2025-01-01-preview","deployment":"model-router","endpoint":"https://julia-mazd101h-eastus2.openai.azure.com/","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-26T12:41:51.069Z"}
+{"apiVersion":"2025-01-01-preview","deployment":"model-router","endpoint":"https://julia-mazd101h-eastus2.openai.azure.com/","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-26T14:34:03.793Z"}
