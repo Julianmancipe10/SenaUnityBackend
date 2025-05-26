@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "rm -rf /app/node_modules/.cache && rm -rf node_modules && npm cache clean --force && npm ci --omit=dev"
+buildCommand = "npm ci --omit=dev --no-cache"
 
 [deploy]
 startCommand = "npm start"
