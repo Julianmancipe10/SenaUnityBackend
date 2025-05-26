@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS senaunity.Usuario (
   Passaword VARCHAR(255) NOT NULL,
   Foto VARCHAR(45) NULL,
   PRIMARY KEY (idUsuario),
-  UNIQUE INDEX Correo_UNIQUE (Correo ASC) VISIBLE,
-  UNIQUE INDEX Documento_UNIQUE (Documento ASC) VISIBLE)
-ENGINE = InnoDB;
+  UNIQUE INDEX Correo_UNIQUE (Correo),
+  UNIQUE INDEX Documento_UNIQUE (Documento)
+);
 
 -- -----------------------------------------------------
 -- Table senaunity.Roles
@@ -38,10 +38,10 @@ CREATE TABLE IF NOT EXISTS senaunity.Roles (
   idUsuarioRoll INT NOT NULL AUTO_INCREMENT,
   Rol VARCHAR(45) NOT NULL,
   PRIMARY KEY (idUsuarioRoll),
-  UNIQUE INDEX Rol_UNIQUE (Rol ASC) VISIBLE)
-ENGINE = InnoDB;
+  UNIQUE INDEX Rol_UNIQUE (Rol)
+);
 
--- Insertar roles básicos si no existen
+-- Insertar roles básicos
 INSERT IGNORE INTO senaunity.Roles (Rol) VALUES 
 ('Aprendiz'),
 ('Instructor'),
@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS senaunity.TipoUsuario (
     FOREIGN KEY (Roles_idUsuarioRoll)
     REFERENCES senaunity.Roles (idUsuarioRoll)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    ON UPDATE NO ACTION
+);
 
 CREATE INDEX fk_TipoUsuario_Usuario1_idx ON senaunity.TipoUsuario (Usuario_idUsuario ASC) VISIBLE;
 CREATE INDEX fk_TipoUsuario_Roles1_idx ON senaunity.TipoUsuario (Roles_idUsuarioRoll ASC) VISIBLE;
@@ -113,8 +113,8 @@ CREATE INDEX fk_Respuestas_Usuario1_idx ON senaunity.Respuestas (Usuario_idUsuar
 CREATE TABLE IF NOT EXISTS senaunity.permiso (
   ID_Permiso INT NOT NULL AUTO_INCREMENT,
   Nombre VARCHAR(100) NOT NULL,
-  PRIMARY KEY (ID_Permiso))
-ENGINE = InnoDB;
+  PRIMARY KEY (ID_Permiso)
+);
 
 -- Insertar permisos básicos
 INSERT INTO senaunity.permiso (Nombre) VALUES 
@@ -135,24 +135,23 @@ INSERT INTO senaunity.permiso (Nombre) VALUES
 INSERT INTO senaunity.Usuario (Nombre, Apellido, Correo, Documento, Passaword) VALUES 
 ('Admin', 'Sistema', 'admin@senaunity.com', '1234567890', '$2b$10$Jq2ACmT312MfWc8Kkaq8POOF0qtZjWsP2eqTp9TDQFpi5Zm4kP.dW');
 
--- Obtener el ID del usuario administrador y el rol de administrador
-SET @admin_id = LAST_INSERT_ID();
-SET @admin_rol_id = (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'Administrador');
-
 -- Asignar rol de administrador
-INSERT INTO senaunity.TipoUsuario (Tipo, Usuario_idUsuario, Roles_idUsuarioRoll) VALUES 
-('3', @admin_id, @admin_rol_id);
+INSERT INTO senaunity.TipoUsuario (Tipo, Usuario_idUsuario, Roles_idUsuarioRoll)
+SELECT '3', u.idUsuario, r.idUsuarioRoll
+FROM senaunity.Usuario u, senaunity.Roles r
+WHERE u.Correo = 'admin@senaunity.com' AND r.Rol = 'Administrador';
 
 -- Asignar todos los permisos al administrador
 INSERT INTO senaunity.UsuarioPermisos (FechaLimite, permiso_ID_Permiso, Usuario_idUsuario)
-SELECT '2099-12-31', ID_Permiso, @admin_id
-FROM senaunity.permiso;
+SELECT '2099-12-31', p.ID_Permiso, u.idUsuario
+FROM senaunity.Usuario u, senaunity.permiso p
+WHERE u.Correo = 'admin@senaunity.com';
 
 -- -----------------------------------------------------
 -- Table senaunity.UsuarioPermisos
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS senaunity.UsuarioPermisos (
-  idUsuarioPermisos INT NOT NULL,
+  idUsuarioPermisos INT NOT NULL AUTO_INCREMENT,
   FechaLimite VARCHAR(45) NOT NULL,
   permiso_ID_Permiso INT NOT NULL,
   Usuario_idUsuario INT NOT NULL,
@@ -166,8 +165,8 @@ CREATE TABLE IF NOT EXISTS senaunity.UsuarioPermisos (
     FOREIGN KEY (Usuario_idUsuario)
     REFERENCES senaunity.Usuario (idUsuario)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    ON UPDATE NO ACTION
+);
 
 CREATE INDEX fk_UsuarioPermisos_permiso1_idx ON senaunity.UsuarioPermisos (permiso_ID_Permiso ASC) VISIBLE;
 CREATE INDEX fk_UsuarioPermisos_Usuario1_idx ON senaunity.UsuarioPermisos (Usuario_idUsuario ASC) VISIBLE;
@@ -211,7 +210,7 @@ CREATE TABLE IF NOT EXISTS senaunity.Publicaciones (
   Usuario_idUsuario INT NOT NULL,
   Ubicacion VARCHAR(45) NOT NULL,
   enlace_ID_Enlace INT NOT NULL,
-  TipoPublicacion ENUM("1", "2") NOT NULL,
+  TipoPublicacion ENUM("1", "2", "3", "4") NOT NULL,
   PRIMARY KEY (ID_Evento),
   CONSTRAINT fk_evento_Usuario1
     FOREIGN KEY (Usuario_idUsuario)

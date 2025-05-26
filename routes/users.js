@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import pool from '../config/db.js'; // ✅ Ajusta la ruta según tu estructura de carpetas
+import { pool } from '../config/db.js';
 
 const router = express.Router();
 
@@ -29,8 +29,8 @@ const authenticateToken = (req, res, next) => {
 // Obtener perfil del usuario autenticado
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const [users] = await pool.query(
-      'SELECT idUsuario, Nombre, Apellido, Correo, Documento FROM Usuario WHERE idUsuario = ?',
+    const [users] = await pool.promise().query(
+      'SELECT idUsuario, Nombre, Apellido, Correo, Documento FROM usuario WHERE idUsuario = ?',
       [req.user.id]
     );
 
@@ -70,8 +70,8 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
   try {
     // Validar si el correo ya está en uso por otro usuario
-    const [existingUsers] = await pool.query(
-      'SELECT idUsuario FROM Usuario WHERE Correo = ? AND idUsuario != ?',
+    const [existingUsers] = await pool.promise().query(
+      'SELECT idUsuario FROM usuario WHERE Correo = ? AND idUsuario != ?',
       [correo, req.user.id]
     );
 
@@ -79,8 +79,8 @@ router.put('/profile', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'El correo ya está en uso' });
     }
 
-    await pool.query(
-      'UPDATE Usuario SET Nombre = ?, Apellido = ?, Correo = ? WHERE idUsuario = ?',
+    await pool.promise().query(
+      'UPDATE usuario SET Nombre = ?, Apellido = ?, Correo = ? WHERE idUsuario = ?',
       [nombre, apellido, correo, req.user.id]
     );
 
@@ -106,11 +106,11 @@ router.put('/profile', authenticateToken, async (req, res) => {
 // Obtener todos los usuarios
 router.get('/', async (req, res) => {
   try {
-    const [users] = await pool.query(`
+    const [users] = await pool.promise().query(`
       SELECT u.*, t.Tipo, r.Rol 
-      FROM Usuario u 
-      LEFT JOIN TipoUsuario t ON u.idUsuario = t.Usuario_idUsuario 
-      LEFT JOIN Roles r ON t.Roles_idUsuarioRoll = r.idUsuarioRoll
+      FROM usuario u 
+      LEFT JOIN tipousuario t ON u.idUsuario = t.Usuario_idUsuario 
+      LEFT JOIN roles r ON t.Roles_idUsuarioRoll = r.idUsuarioRoll
     `);
     res.json(users);
   } catch (error) {
@@ -127,11 +127,11 @@ router.get('/:id', async (req, res) => {
   }
 
   try {
-    const [users] = await pool.query(`
+    const [users] = await pool.promise().query(`
       SELECT u.*, t.Tipo, r.Rol 
-      FROM Usuario u 
-      LEFT JOIN TipoUsuario t ON u.idUsuario = t.Usuario_idUsuario 
-      LEFT JOIN Roles r ON t.Roles_idUsuarioRoll = r.idUsuarioRoll 
+      FROM usuario u 
+      LEFT JOIN tipousuario t ON u.idUsuario = t.Usuario_idUsuario 
+      LEFT JOIN roles r ON t.Roles_idUsuarioRoll = r.idUsuarioRoll 
       WHERE u.idUsuario = ?
     `, [id]);
 
@@ -156,8 +156,8 @@ router.put('/:id', async (req, res) => {
   const { nombre, apellido, correo, documento } = req.body;
 
   try {
-    const [result] = await pool.query(
-      'UPDATE Usuario SET Nombre = ?, Apellido = ?, Correo = ?, Documento = ? WHERE idUsuario = ?',
+    const [result] = await pool.promise().query(
+      'UPDATE usuario SET Nombre = ?, Apellido = ?, Correo = ?, Documento = ? WHERE idUsuario = ?',
       [nombre, apellido, correo, documento, id]
     );
 
@@ -180,8 +180,8 @@ router.delete('/:id', async (req, res) => {
   }
 
   try {
-    const [result] = await pool.query(
-      'DELETE FROM Usuario WHERE idUsuario = ?', 
+    const [result] = await pool.promise().query(
+      'DELETE FROM usuario WHERE idUsuario = ?', 
       [id]
     );
 
