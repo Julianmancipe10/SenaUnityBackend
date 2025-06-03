@@ -37,3 +37,26 @@
 
 {"apiVersion":"2025-01-01-preview","deployment":"model-router","endpoint":"https://julia-mazd101h-eastus2.openai.azure.com/","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-26T14:34:03.793Z"}
 
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T13:59:57.040Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T14:01:07.425Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T14:01:37.165Z"}
+{"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"hola","timestamp":"2025-05-27T14:02:01.707Z","tokens":62}
+{"hasContext":true,"level":"info","message":"Respuesta generada exitosamente","question":"que es senaUnity","timestamp":"2025-05-27T14:02:44.014Z","tokens":157}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T14:17:46.474Z"}
+{"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"¿Qué programas de formación ofrece el SENA?","timestamp":"2025-05-27T14:17:56.387Z","tokens":306}
+{"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"¿Cómo me registro en SenaUnity?","timestamp":"2025-05-27T14:20:50.841Z","tokens":183}
+{"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"¿Cuáles son los requisitos para estudiar en el SENA?","timestamp":"2025-05-27T14:21:19.027Z","tokens":260}
+{"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"¿Cómo puedo ver mis cursos inscritos?","timestamp":"2025-05-27T14:21:47.601Z","tokens":155}
+{"level":"info","message":"Respuesta recuperada de caché","question":"¿Qué programas de formación ofrece el SENA?","timestamp":"2025-05-27T14:39:10.710Z"}
+{"level":"info","message":"Respuesta recuperada de caché","question":"¿Cuáles son los requisitos para estudiar en el SENA?","timestamp":"2025-05-27T15:16:07.569Z"}
+{"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"donde queda el sena en armenia","timestamp":"2025-05-27T15:17:39.163Z","tokens":175}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T15:28:41.824Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T15:28:43.113Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T15:34:01.726Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T15:34:03.948Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T15:35:12.680Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T15:35:13.461Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-05-27T15:38:15.585Z"}
+{"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"¿Qué programas de formación ofrece el SENA?","timestamp":"2025-05-27T16:14:06.156Z","tokens":303}
+{"hasContext":true,"level":"info","message":"Respuesta generada exitosamente","question":"que es senaUnity","timestamp":"2025-05-27T16:14:22.441Z","tokens":411}
+{"hasContext":true,"level":"info","message":"Respuesta generada exitosamente","question":"quien es el presidente de venezuela","timestamp":"2025-05-27T16:16:09.900Z","tokens":483}
