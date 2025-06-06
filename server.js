@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 // Crear directorio uploads si no existe
 const uploadsDir = join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 console.log("Endpoint:", process.env.AZURE_OPENAI_ENDPOINT);

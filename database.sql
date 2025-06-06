@@ -1,270 +1,384 @@
--- MySQL Workbench Forward Engineering
+  -- MySQL Workbench Forward Engineering
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+  -- Desactivar verificaciones para permitir la creación de tablas
+  SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+  SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+  SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
--- -----------------------------------------------------
--- Schema senaunity
--- -----------------------------------------------------
-DROP SCHEMA IF EXISTS senaunity ;
+  -- -----------------------------------------------------
+  -- Schema senaunity
+  -- -----------------------------------------------------
 
--- -----------------------------------------------------
--- Schema senaunity
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS senaunity DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
-USE senaunity ;
+  -- Eliminar schema si existe
+  DROP SCHEMA IF EXISTS senaunity;
 
--- -----------------------------------------------------
--- Table senaunity.Usuario
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.Usuario (
-  idUsuario INT NOT NULL AUTO_INCREMENT,
-  Nombre VARCHAR(45) NOT NULL,
-  Apellido VARCHAR(45) NOT NULL,
-  Correo VARCHAR(45) NOT NULL,
-  Documento VARCHAR(20) NOT NULL,
-  Passaword VARCHAR(255) NOT NULL,
-  Foto VARCHAR(45) NULL,
-  PRIMARY KEY (idUsuario),
-  UNIQUE INDEX Correo_UNIQUE (Correo),
-  UNIQUE INDEX Documento_UNIQUE (Documento)
-);
+  -- Crear schema
+  CREATE SCHEMA IF NOT EXISTS senaunity DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+  USE senaunity;
 
--- -----------------------------------------------------
--- Table senaunity.Roles
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.Roles (
-  idUsuarioRoll INT NOT NULL AUTO_INCREMENT,
-  Rol VARCHAR(45) NOT NULL,
-  PRIMARY KEY (idUsuarioRoll),
-  UNIQUE INDEX Rol_UNIQUE (Rol)
-);
+  -- -----------------------------------------------------
+  -- Table senaunity.Usuario
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.Usuario (
+    idUsuario INT NOT NULL AUTO_INCREMENT,
+    Nombre VARCHAR(45) NOT NULL,
+    Apellido VARCHAR(45) NOT NULL,
+    Correo VARCHAR(45) NOT NULL,
+    Documento VARCHAR(20) NOT NULL,
+    Password VARCHAR(255) NOT NULL,
+    Foto VARCHAR(255) NULL,
+    FechaRegistro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    EstadoCuenta ENUM('pendiente', 'activo', 'rechazado') DEFAULT 'pendiente',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (idUsuario),
+    UNIQUE INDEX Correo_UNIQUE (Correo ASC) VISIBLE,
+    UNIQUE INDEX Documento_UNIQUE (Documento ASC) VISIBLE,
+    INDEX idx_estado_cuenta (EstadoCuenta),
+    INDEX idx_fecha_registro (FechaRegistro)
+  ) ENGINE = InnoDB;
 
--- Insertar roles básicos
-INSERT IGNORE INTO senaunity.Roles (Rol) VALUES 
-('Aprendiz'),
-('Instructor'),
-('Administrador'),
-('Funcionario');
+  -- -----------------------------------------------------
+  -- Table senaunity.Roles
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.Roles (
+    idUsuarioRoll INT NOT NULL AUTO_INCREMENT,
+    Rol VARCHAR(45) NOT NULL,
+    PRIMARY KEY (idUsuarioRoll),
+    UNIQUE INDEX Rol_UNIQUE (Rol ASC) VISIBLE
+  ) ENGINE = InnoDB;
 
--- -----------------------------------------------------
--- Table senaunity.TipoUsuario
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.TipoUsuario (
-  idTipoUsuario INT NOT NULL AUTO_INCREMENT,
-  Tipo ENUM('1','2','3','4') NOT NULL COMMENT '1=Aprendiz, 2=Instructor, 3=Administrador, 4=Funcionario',
-  Usuario_idUsuario INT NOT NULL,
-  Roles_idUsuarioRoll INT NOT NULL,
-  PRIMARY KEY (idTipoUsuario),
-  CONSTRAINT fk_TipoUsuario_Usuario1
-    FOREIGN KEY (Usuario_idUsuario)
-    REFERENCES senaunity.Usuario (idUsuario)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT fk_TipoUsuario_Roles1
-    FOREIGN KEY (Roles_idUsuarioRoll)
-    REFERENCES senaunity.Roles (idUsuarioRoll)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-);
+  -- -----------------------------------------------------
+  -- Table senaunity.TipoUsuario
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.TipoUsuario (
+    idTipoUsuario INT NOT NULL AUTO_INCREMENT,
+    Tipo ENUM('1','2','3','4') NOT NULL COMMENT '1=Aprendiz, 2=Instructor, 3=Administrador, 4=Funcionario',
+    Usuario_idUsuario INT NOT NULL,
+    Roles_idUsuarioRoll INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (idTipoUsuario),
+    INDEX fk_TipoUsuario_Usuario1_idx (Usuario_idUsuario ASC) VISIBLE,
+    INDEX fk_TipoUsuario_Roles1_idx (Roles_idUsuarioRoll ASC) VISIBLE,
+    CONSTRAINT fk_TipoUsuario_Usuario1
+      FOREIGN KEY (Usuario_idUsuario)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+    CONSTRAINT fk_TipoUsuario_Roles1
+      FOREIGN KEY (Roles_idUsuarioRoll)
+      REFERENCES senaunity.Roles (idUsuarioRoll)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
 
-CREATE INDEX fk_TipoUsuario_Usuario1_idx ON senaunity.TipoUsuario (Usuario_idUsuario ASC) VISIBLE;
-CREATE INDEX fk_TipoUsuario_Roles1_idx ON senaunity.TipoUsuario (Roles_idUsuarioRoll ASC) VISIBLE;
+  -- -----------------------------------------------------
+  -- Table senaunity.Preguntas
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.Preguntas (
+    idPreguntas INT NOT NULL AUTO_INCREMENT,
+    Pregunta VARCHAR(200) NOT NULL,
+    PRIMARY KEY (idPreguntas)
+  ) ENGINE = InnoDB;
 
--- -----------------------------------------------------
--- Table senaunity.Preguntas
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.Preguntas (
-  idPreguntas INT NOT NULL,
-  Pregunta VARCHAR(200) NOT NULL,
-  PRIMARY KEY (idPreguntas))
-ENGINE = InnoDB;
+  -- -----------------------------------------------------
+  -- Table senaunity.Respuestas
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.Respuestas (
+    idRespuestas INT NOT NULL AUTO_INCREMENT,
+    Valor VARCHAR(45) NOT NULL,
+    Respuestas VARCHAR(45) NOT NULL,
+    Fecha DATE NOT NULL,
+    Preguntas_idPreguntas INT NOT NULL,
+    Usuario_idUsuario INT NOT NULL,
+    PRIMARY KEY (idRespuestas),
+    INDEX fk_Respuestas_Preguntas_idx (Preguntas_idPreguntas ASC) VISIBLE,
+    INDEX fk_Respuestas_Usuario1_idx (Usuario_idUsuario ASC) VISIBLE,
+    CONSTRAINT fk_Respuestas_Preguntas
+      FOREIGN KEY (Preguntas_idPreguntas)
+      REFERENCES senaunity.Preguntas (idPreguntas)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+    CONSTRAINT fk_Respuestas_Usuario1
+      FOREIGN KEY (Usuario_idUsuario)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
 
--- -----------------------------------------------------
--- Table senaunity.Respuestas
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.Respuestas (
-  idRespuestas INT NOT NULL,
-  Valor VARCHAR(45) NOT NULL,
-  Respuestas VARCHAR(45) NOT NULL,
-  Fecha DATE NOT NULL,
-  Preguntas_idPreguntas INT NOT NULL,
-  Usuario_idUsuario INT NOT NULL,
-  PRIMARY KEY (idRespuestas),
-  CONSTRAINT fk_Respuestas_Preguntas
-    FOREIGN KEY (Preguntas_idPreguntas)
-    REFERENCES senaunity.Preguntas (idPreguntas)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT fk_Respuestas_Usuario1
-    FOREIGN KEY (Usuario_idUsuario)
-    REFERENCES senaunity.Usuario (idUsuario)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  -- -----------------------------------------------------
+  -- Table senaunity.permiso
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.permiso (
+    ID_Permiso INT NOT NULL AUTO_INCREMENT,
+    Nombre VARCHAR(100) NOT NULL,
+    PRIMARY KEY (ID_Permiso)
+  ) ENGINE = InnoDB;
 
-CREATE INDEX fk_Respuestas_Preguntas_idx ON senaunity.Respuestas (Preguntas_idPreguntas ASC) VISIBLE;
-CREATE INDEX fk_Respuestas_Usuario1_idx ON senaunity.Respuestas (Usuario_idUsuario ASC) VISIBLE;
+  -- -----------------------------------------------------
+  -- Table senaunity.UsuarioPermisos
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.UsuarioPermisos (
+    idUsuarioPermisos INT NOT NULL AUTO_INCREMENT,
+    FechaLimite DATE NOT NULL,
+    permiso_ID_Permiso INT NOT NULL,
+    Usuario_idUsuario INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (idUsuarioPermisos),
+    INDEX fk_UsuarioPermisos_permiso1_idx (permiso_ID_Permiso ASC) VISIBLE,
+    INDEX fk_UsuarioPermisos_Usuario1_idx (Usuario_idUsuario ASC) VISIBLE,
+    CONSTRAINT fk_UsuarioPermisos_permiso1
+      FOREIGN KEY (permiso_ID_Permiso)
+      REFERENCES senaunity.permiso (ID_Permiso)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+    CONSTRAINT fk_UsuarioPermisos_Usuario1
+      FOREIGN KEY (Usuario_idUsuario)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
 
--- -----------------------------------------------------
--- Table senaunity.permiso
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.permiso (
-  ID_Permiso INT NOT NULL AUTO_INCREMENT,
-  Nombre VARCHAR(100) NOT NULL,
-  PRIMARY KEY (ID_Permiso)
-);
+  -- -----------------------------------------------------
+  -- Table senaunity.enlace
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.enlace (
+    ID_Enlace INT NOT NULL AUTO_INCREMENT,
+    Nombre VARCHAR(255) NOT NULL,
+    URL VARCHAR(255) NOT NULL,
+    horario_ID_Horario INT NOT NULL,
+    FechaVencimiento DATE NOT NULL,
+    Estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    PRIMARY KEY (ID_Enlace)
+  ) ENGINE = InnoDB;
 
--- Insertar permisos básicos
-INSERT INTO senaunity.permiso (Nombre) VALUES 
-('crear_publicacion'),
-('editar_publicacion'),
-('eliminar_publicacion'),
-('ver_publicacion'),
-('crear_usuario'),
-('editar_usuario'),
-('eliminar_usuario'),
-('ver_usuario'),
-('asignar_roles'),
-('ver_roles'),
-('asignar_permisos'),
-('ver_permisos');
+  -- -----------------------------------------------------
+  -- Table senaunity.Publicaciones
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.Publicaciones (
+    ID_Evento INT NOT NULL AUTO_INCREMENT,
+    Nombre VARCHAR(255) NOT NULL,
+    Descripción TEXT NOT NULL,
+    Fecha DATETIME NOT NULL,
+    Estado ENUM('Activo', 'Inactivo') NULL DEFAULT 'Activo',
+    Responsable INT NOT NULL,
+    Usuario_idUsuario INT NOT NULL,
+    Ubicacion VARCHAR(255) NOT NULL,
+    enlace_ID_Enlace INT NULL,
+    TipoPublicacion ENUM("1", "2") NOT NULL COMMENT '1=Evento, 2=Noticia',
+    FechaCreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (ID_Evento),
+    INDEX fk_evento_Usuario1_idx (Usuario_idUsuario ASC) VISIBLE,
+    INDEX fk_evento_enlace1_idx (enlace_ID_Enlace ASC) VISIBLE,
+    CONSTRAINT fk_evento_Usuario1
+      FOREIGN KEY (Usuario_idUsuario)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+    CONSTRAINT fk_evento_enlace1
+      FOREIGN KEY (enlace_ID_Enlace)
+      REFERENCES senaunity.enlace (ID_Enlace)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
 
--- Insertar usuario administrador
-INSERT INTO senaunity.Usuario (Nombre, Apellido, Correo, Documento, Passaword) VALUES 
-('Admin', 'Sistema', 'admin@senaunity.com', '1234567890', '$2b$10$Jq2ACmT312MfWc8Kkaq8POOF0qtZjWsP2eqTp9TDQFpi5Zm4kP.dW');
+  -- -----------------------------------------------------
+  -- Table senaunity.formacion
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.formacion (
+    ID_Formacion INT NOT NULL AUTO_INCREMENT,
+    Nombre VARCHAR(255) NOT NULL,
+    Descripción TEXT NOT NULL,
+    FechaVencimiento DATE NOT NULL,
+    Horario VARCHAR(45) NOT NULL,
+    Estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    enlace_ID_Enlace INT NOT NULL,
+    FechaCreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (ID_Formacion),
+    INDEX fk_formacion_enlace1_idx (enlace_ID_Enlace ASC) VISIBLE,
+    CONSTRAINT fk_formacion_enlace1
+      FOREIGN KEY (enlace_ID_Enlace)
+      REFERENCES senaunity.enlace (ID_Enlace)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
 
--- Asignar rol de administrador
-INSERT INTO senaunity.TipoUsuario (Tipo, Usuario_idUsuario, Roles_idUsuarioRoll)
-SELECT '3', u.idUsuario, r.idUsuarioRoll
-FROM senaunity.Usuario u, senaunity.Roles r
-WHERE u.Correo = 'admin@senaunity.com' AND r.Rol = 'Administrador';
+  -- -----------------------------------------------------
+  -- Table senaunity.slider
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.slider (
+    ID_Slider INT NOT NULL AUTO_INCREMENT,
+    Imagen VARCHAR(255) NOT NULL,
+    Descripción TEXT NULL DEFAULT NULL,
+    evento_ID_Evento INT NOT NULL,
+    Estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    FechaCreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (ID_Slider),
+    INDEX fk_slider_evento1_idx (evento_ID_Evento ASC) VISIBLE,
+    CONSTRAINT fk_slider_evento1
+      FOREIGN KEY (evento_ID_Evento)
+      REFERENCES senaunity.Publicaciones (ID_Evento)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
 
--- Asignar todos los permisos al administrador
-INSERT INTO senaunity.UsuarioPermisos (FechaLimite, permiso_ID_Permiso, Usuario_idUsuario)
-SELECT '2099-12-31', p.ID_Permiso, u.idUsuario
-FROM senaunity.Usuario u, senaunity.permiso p
-WHERE u.Correo = 'admin@senaunity.com';
+  -- -----------------------------------------------------
+  -- Table senaunity.Sesiones
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.Sesiones (
+    id INT NOT NULL AUTO_INCREMENT,
+    Usuario_idUsuario INT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    refresh_token VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent TEXT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX fk_sesiones_usuario_idx (Usuario_idUsuario ASC) VISIBLE,
+    CONSTRAINT fk_sesiones_usuario
+      FOREIGN KEY (Usuario_idUsuario)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
 
--- -----------------------------------------------------
--- Table senaunity.UsuarioPermisos
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.UsuarioPermisos (
-  idUsuarioPermisos INT NOT NULL AUTO_INCREMENT,
-  FechaLimite VARCHAR(45) NOT NULL,
-  permiso_ID_Permiso INT NOT NULL,
-  Usuario_idUsuario INT NOT NULL,
-  PRIMARY KEY (idUsuarioPermisos),
-  CONSTRAINT fk_UsuarioPermisos_permiso1
-    FOREIGN KEY (permiso_ID_Permiso)
-    REFERENCES senaunity.permiso (ID_Permiso)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT fk_UsuarioPermisos_Usuario1
-    FOREIGN KEY (Usuario_idUsuario)
-    REFERENCES senaunity.Usuario (idUsuario)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-);
+  -- -----------------------------------------------------
+  -- Table senaunity.LoginAttempts
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.LoginAttempts (
+    id INT NOT NULL AUTO_INCREMENT,
+    ip_address VARCHAR(45) NOT NULL,
+    email VARCHAR(45) NOT NULL,
+    attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    success BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (id),
+    INDEX idx_ip_email (ip_address, email)
+  ) ENGINE = InnoDB;
 
-CREATE INDEX fk_UsuarioPermisos_permiso1_idx ON senaunity.UsuarioPermisos (permiso_ID_Permiso ASC) VISIBLE;
-CREATE INDEX fk_UsuarioPermisos_Usuario1_idx ON senaunity.UsuarioPermisos (Usuario_idUsuario ASC) VISIBLE;
+  -- -----------------------------------------------------
+  -- Insertar datos iniciales
+  -- -----------------------------------------------------
 
--- -----------------------------------------------------
--- Table senaunity.contacto
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.contacto (
-  ID_Contacto INT NOT NULL AUTO_INCREMENT,
-  Nombre VARCHAR(100) NOT NULL,
-  Correo VARCHAR(100) NOT NULL,
-  Teléfono VARCHAR(20) NULL DEFAULT NULL,
-  Mensaje TEXT NOT NULL,
-  Estado ENUM('Pendiente', 'Atendido') NULL DEFAULT 'Pendiente',
-  Fecha_Envio TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (ID_Contacto))
-ENGINE = InnoDB;
+  -- Insertar roles básicos
+  INSERT IGNORE INTO senaunity.Roles (Rol) VALUES 
+  ('Aprendiz'),
+  ('Instructor'),
+  ('Administrador'),
+  ('Funcionario');
 
--- -----------------------------------------------------
--- Table senaunity.enlace
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.enlace (
-  ID_Enlace INT NOT NULL AUTO_INCREMENT,
-  Nombre VARCHAR(255) NOT NULL,
-  URL VARCHAR(255) NOT NULL,
-  horario_ID_Horario INT NOT NULL,
-  FechaVencimiento VARCHAR(45) NOT NULL,
-  PRIMARY KEY (ID_Enlace))
-ENGINE = InnoDB;
+  -- Insertar permisos básicos
+  INSERT INTO senaunity.permiso (Nombre) VALUES 
+  ('crear_publicacion'),
+  ('editar_publicacion'),
+  ('eliminar_publicacion'),
+  ('ver_publicacion'),
+  ('crear_usuario'),
+  ('editar_usuario'),
+  ('eliminar_usuario'),
+  ('ver_usuario'),
+  ('asignar_roles'),
+  ('ver_roles'),
+  ('asignar_permisos'),
+  ('ver_permisos'),
+  ('aprobar_usuarios'),
+  ('gestionar_formacion'),
+  ('gestionar_enlaces');
 
--- -----------------------------------------------------
--- Table senaunity.Publicaciones
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.Publicaciones (
-  ID_Evento INT NOT NULL AUTO_INCREMENT,
-  Nombre VARCHAR(255) NOT NULL,
-  Descripción TEXT NOT NULL,
-  Fecha DATETIME NOT NULL,
-  Estado ENUM('Activo', 'Inactivo') NULL DEFAULT 'Activo',
-  Responsable INT NOT NULL,
-  Usuario_idUsuario INT NOT NULL,
-  Ubicacion VARCHAR(45) NOT NULL,
-  enlace_ID_Enlace INT NOT NULL,
-  TipoPublicacion ENUM("1", "2", "3", "4") NOT NULL,
-  PRIMARY KEY (ID_Evento),
-  CONSTRAINT fk_evento_Usuario1
-    FOREIGN KEY (Usuario_idUsuario)
-    REFERENCES senaunity.Usuario (idUsuario)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT fk_evento_enlace1
-    FOREIGN KEY (enlace_ID_Enlace)
-    REFERENCES senaunity.enlace (ID_Enlace)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  -- Insertar Administrador Principal
+  INSERT INTO senaunity.Usuario (
+      Nombre, 
+      Apellido, 
+      Correo, 
+      Documento, 
+      Password, 
+      EstadoCuenta
+  ) VALUES (
+      'Administrador', 
+      'Principal', 
+      'admin@senaunity.com', 
+      '1234567890', 
+      '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', -- Contraseña: Admin2024*
+      'activo'
+  );
 
-CREATE INDEX fk_evento_Usuario1_idx ON senaunity.Publicaciones (Usuario_idUsuario ASC) VISIBLE;
-CREATE INDEX fk_evento_enlace1_idx ON senaunity.Publicaciones (enlace_ID_Enlace ASC) VISIBLE;
+  -- Obtener el ID del administrador recién insertado
+  SET @admin_id = LAST_INSERT_ID();
 
--- -----------------------------------------------------
--- Table senaunity.formacion
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.formacion (
-  ID_Formacion INT NOT NULL AUTO_INCREMENT,
-  Nombre VARCHAR(255) NOT NULL,
-  Descripción TEXT NOT NULL,
-  FechaVencimiento VARCHAR(45) NOT NULL DEFAULT 'Activo',
-  Horario VARCHAR(45) NOT NULL,
-  enlace_ID_Enlace INT NOT NULL,
-  PRIMARY KEY (ID_Formacion),
-  CONSTRAINT fk_formacion_enlace1
-    FOREIGN KEY (enlace_ID_Enlace)
-    REFERENCES senaunity.enlace (ID_Enlace)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  -- Obtener el ID del rol de Administrador
+  SELECT @admin_role_id := idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'Administrador';
 
-CREATE INDEX fk_formacion_enlace1_idx ON senaunity.formacion (enlace_ID_Enlace ASC) VISIBLE;
+  -- Asignar rol de Administrador
+  INSERT INTO senaunity.TipoUsuario (
+      Usuario_idUsuario,
+      Roles_idUsuarioRoll,
+      Tipo
+  ) VALUES (
+      @admin_id,
+      @admin_role_id,
+      '3'
+  );
 
--- -----------------------------------------------------
--- Table senaunity.slider
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS senaunity.slider (
-  ID_Slider INT NOT NULL AUTO_INCREMENT,
-  Imagen VARCHAR(255) NOT NULL,
-  Descripción TEXT NULL DEFAULT NULL,
-  evento_ID_Evento INT NOT NULL,
-  PRIMARY KEY (ID_Slider),
-  CONSTRAINT fk_slider_evento1
-    FOREIGN KEY (evento_ID_Evento)
-    REFERENCES senaunity.Publicaciones (ID_Evento)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  -- Asignar todos los permisos al administrador
+  INSERT INTO senaunity.UsuarioPermisos (
+      Usuario_idUsuario,
+      permiso_ID_Permiso,
+      FechaLimite
+  )
+  SELECT 
+      @admin_id,
+      ID_Permiso,
+      '2099-12-31' -- Fecha límite lejana
+  FROM senaunity.permiso;
 
-CREATE INDEX fk_slider_evento1_idx ON senaunity.slider (evento_ID_Evento ASC) VISIBLE;
+  -- Insertar Administrador Secundario
+  INSERT INTO senaunity.Usuario (
+      Nombre, 
+      Apellido, 
+      Correo, 
+      Documento, 
+      Password, 
+      EstadoCuenta
+  ) VALUES (
+      'Admin', 
+      'Soporte', 
+      'soporte@senaunity.com', 
+      '0987654321', 
+      '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', -- Contraseña: Admin2024*
+      'activo'
+  );
 
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS; 
+  -- Obtener el ID del administrador secundario
+  SET @admin_soporte_id = LAST_INSERT_ID();
+
+  -- Asignar rol de Administrador al soporte
+  INSERT INTO senaunity.TipoUsuario (
+      Usuario_idUsuario,
+      Roles_idUsuarioRoll,
+      Tipo
+  ) VALUES (
+      @admin_soporte_id,
+      @admin_role_id,
+      '3'
+  );
+
+  -- Asignar todos los permisos al administrador de soporte
+  INSERT INTO senaunity.UsuarioPermisos (
+      Usuario_idUsuario,
+      permiso_ID_Permiso,
+      FechaLimite
+  )
+  SELECT 
+      @admin_soporte_id,
+      ID_Permiso,
+      '2099-12-31' -- Fecha límite lejana
+  FROM senaunity.permiso;
+
+  -- Reactivar verificaciones
+  SET SQL_MODE=@OLD_SQL_MODE;
+  SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+  SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS; 
