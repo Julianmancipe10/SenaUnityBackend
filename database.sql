@@ -26,9 +26,13 @@
     Correo VARCHAR(45) NOT NULL,
     Documento VARCHAR(20) NOT NULL,
     Password VARCHAR(255) NOT NULL,
+    Rol ENUM('aprendiz', 'instructor', 'administrador', 'funcionario') NOT NULL DEFAULT 'aprendiz',
     Foto VARCHAR(255) NULL,
     FechaRegistro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    EstadoCuenta ENUM('pendiente', 'activo', 'rechazado') DEFAULT 'pendiente',
+    EstadoCuenta ENUM('pendiente', 'activo', 'rechazado') DEFAULT 'activo',
+    RequiereValidacion BOOLEAN DEFAULT FALSE COMMENT 'TRUE para instructor/funcionario, FALSE para aprendiz',
+    ValidadoPor INT NULL COMMENT 'ID del administrador que validó la cuenta',
+    FechaValidacion DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -36,7 +40,14 @@
     UNIQUE INDEX Correo_UNIQUE (Correo ASC) VISIBLE,
     UNIQUE INDEX Documento_UNIQUE (Documento ASC) VISIBLE,
     INDEX idx_estado_cuenta (EstadoCuenta),
-    INDEX idx_fecha_registro (FechaRegistro)
+    INDEX idx_fecha_registro (FechaRegistro),
+    INDEX idx_rol (Rol),
+    INDEX idx_requiere_validacion (RequiereValidacion),
+    CONSTRAINT fk_validado_por
+      FOREIGN KEY (ValidadoPor)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE
   ) ENGINE = InnoDB;
 
   -- -----------------------------------------------------
@@ -48,6 +59,13 @@
     PRIMARY KEY (idUsuarioRoll),
     UNIQUE INDEX Rol_UNIQUE (Rol ASC) VISIBLE
   ) ENGINE = InnoDB;
+
+  -- Insertar roles predefinidos
+  INSERT INTO senaunity.Roles (Rol) VALUES 
+  ('aprendiz'),
+  ('instructor'), 
+  ('administrador'),
+  ('funcionario');
 
   -- -----------------------------------------------------
   -- Table senaunity.TipoUsuario
@@ -261,15 +279,37 @@
   ) ENGINE = InnoDB;
 
   -- -----------------------------------------------------
+  -- Table senaunity.SolicitudesValidacion
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS senaunity.SolicitudesValidacion (
+    idSolicitud INT NOT NULL AUTO_INCREMENT,
+    Usuario_idUsuario INT NOT NULL,
+    TipoRol ENUM('instructor', 'funcionario') NOT NULL,
+    FechaSolicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Estado ENUM('pendiente', 'aprobada', 'rechazada') DEFAULT 'pendiente',
+    Observaciones TEXT NULL,
+    AdministradorValidador INT NULL,
+    FechaRespuesta DATETIME NULL,
+    PRIMARY KEY (idSolicitud),
+    INDEX fk_solicitud_usuario_idx (Usuario_idUsuario ASC) VISIBLE,
+    INDEX fk_solicitud_admin_idx (AdministradorValidador ASC) VISIBLE,
+    INDEX idx_estado_solicitud (Estado),
+    INDEX idx_fecha_solicitud (FechaSolicitud),
+    CONSTRAINT fk_solicitud_usuario
+      FOREIGN KEY (Usuario_idUsuario)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+    CONSTRAINT fk_solicitud_admin
+      FOREIGN KEY (AdministradorValidador)
+      REFERENCES senaunity.Usuario (idUsuario)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE
+  ) ENGINE = InnoDB;
+
+  -- -----------------------------------------------------
   -- Insertar datos iniciales
   -- -----------------------------------------------------
-
-  -- Insertar roles básicos
-  INSERT IGNORE INTO senaunity.Roles (Rol) VALUES 
-  ('Aprendiz'),
-  ('Instructor'),
-  ('Administrador'),
-  ('Funcionario');
 
   -- Insertar permisos básicos
   INSERT INTO senaunity.permiso (Nombre) VALUES 
@@ -290,27 +330,31 @@
   ('gestionar_enlaces');
 
   -- Insertar Administrador Principal
-  INSERT INTO senaunity.Usuario (
-      Nombre, 
-      Apellido, 
-      Correo, 
-      Documento, 
-      Password, 
-      EstadoCuenta
-  ) VALUES (
-      'Administrador', 
-      'Principal', 
-      'admin@senaunity.com', 
-      '1234567890', 
-      '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', -- Contraseña: Admin2024*
-      'activo'
-  );
+INSERT INTO senaunity.Usuario (
+    Nombre, 
+    Apellido, 
+    Correo, 
+    Documento, 
+    Password, 
+    Rol,
+    EstadoCuenta,
+    RequiereValidacion
+) VALUES (
+    'Administrador', 
+    'Principal', 
+    'admin@senaunity.com', 
+    '1234567890', 
+    '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', -- Contraseña: Admin2024*
+    'administrador',
+    'activo',
+    FALSE
+);
 
   -- Obtener el ID del administrador recién insertado
   SET @admin_id = LAST_INSERT_ID();
 
   -- Obtener el ID del rol de Administrador
-  SELECT @admin_role_id := idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'Administrador';
+  SELECT @admin_role_id := idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'administrador';
 
   -- Asignar rol de Administrador
   INSERT INTO senaunity.TipoUsuario (
@@ -336,21 +380,25 @@
   FROM senaunity.permiso;
 
   -- Insertar Administrador Secundario
-  INSERT INTO senaunity.Usuario (
-      Nombre, 
-      Apellido, 
-      Correo, 
-      Documento, 
-      Password, 
-      EstadoCuenta
-  ) VALUES (
-      'Admin', 
-      'Soporte', 
-      'soporte@senaunity.com', 
-      '0987654321', 
-      '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', -- Contraseña: Admin2024*
-      'activo'
-  );
+INSERT INTO senaunity.Usuario (
+    Nombre, 
+    Apellido, 
+    Correo, 
+    Documento, 
+    Password, 
+    Rol,
+    EstadoCuenta,
+    RequiereValidacion
+) VALUES (
+    'Admin', 
+    'Soporte', 
+    'soporte@senaunity.com', 
+    '0987654321', 
+    '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', -- Contraseña: Admin2024*
+    'administrador',
+    'activo',
+    FALSE
+);
 
   -- Obtener el ID del administrador secundario
   SET @admin_soporte_id = LAST_INSERT_ID();

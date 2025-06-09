@@ -14,4 +14,9 @@ router.post('/login', loginLimiter, AuthController.login);
 // Ruta para obtener permisos del usuario
 router.get('/permissions', authenticateToken, AuthController.getPermissions);
 
+// Rutas para gestión administrativa de validaciones
+router.get('/admin/pending-validations', authenticateToken, AuthController.getPendingValidations);
+router.post('/admin/approve-validation/:solicitudId', authenticateToken, AuthController.approveValidation);
+router.post('/admin/reject-validation/:solicitudId', authenticateToken, AuthController.rejectValidation);
+
 export default router; 
