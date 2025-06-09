@@ -24,6 +24,15 @@ class FAQController {
         });
       }
 
+      // Verificar si Azure OpenAI está configurado
+      if (!this.openAIService.isConfigured) {
+        return res.status(503).json({
+          error: "Servicio de FAQ con IA no disponible",
+          message: "El servicio de inteligencia artificial para preguntas frecuentes no está configurado actualmente. Por favor, contacta al administrador del sistema.",
+          details: "Azure OpenAI no configurado"
+        });
+      }
+
       // Preparar mensajes para OpenAI
       const messages = this.faqModel.prepareMessages(sanitizedQuestion, context);
 
@@ -43,6 +52,15 @@ class FAQController {
       if (error.message === "La pregunta no puede estar vacía" || 
           error.message === "La pregunta excede el límite de 500 caracteres") {
         return res.status(400).json({ error: error.message });
+      }
+
+      // Error específico de Azure OpenAI no configurado
+      if (error.message.includes("no está configurado")) {
+        return res.status(503).json({
+          error: "Servicio de FAQ con IA no disponible",
+          message: "El servicio de inteligencia artificial para preguntas frecuentes no está configurado actualmente.",
+          details: error.message
+        });
       }
 
       if (error.statusCode) {

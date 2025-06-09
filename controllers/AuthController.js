@@ -2,6 +2,10 @@ import Auth from '../models/Auth.js';
 import jwt from 'jsonwebtoken';
 import { validateRequiredFields } from '../utils/validation.js';
 
+// Fallback para JWT_SECRET si no está definido en .env
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_2024_senaunity';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret_key_2024_senaunity';
+
 class AuthController {
   static async register(req, res) {
     try {
@@ -48,8 +52,14 @@ class AuthController {
         return res.status(401).json({ message: 'Credenciales inválidas' });
       }
 
+      console.log('Usuario encontrado:', {
+        id: user.idUsuario,
+        correo: user.Correo,
+        hasPassword: !!user.Password
+      });
+
       // Verificar contraseña
-      const validPassword = await Auth.verifyPassword(password, user.Passaword);
+      const validPassword = await Auth.verifyPassword(password, user.Password);
       if (!validPassword) {
         return res.status(401).json({ message: 'Credenciales inválidas' });
       }
@@ -66,13 +76,13 @@ class AuthController {
           roles,
           permisos
         },
-        process.env.JWT_SECRET,
+        JWT_SECRET,
         { expiresIn: '1h' }
       );
 
       const refreshToken = jwt.sign(
         { id: user.idUsuario },
-        process.env.JWT_REFRESH_SECRET,
+        JWT_REFRESH_SECRET,
         { expiresIn: '7d' }
       );
 
@@ -94,6 +104,24 @@ class AuthController {
         return res.status(400).json(error);
       }
       console.error('Error en el inicio de sesión:', error);
+      res.status(500).json({ message: 'Error en el servidor' });
+    }
+  }
+
+  static async getPermissions(req, res) {
+    try {
+      const userId = req.user.id;
+      
+      // Obtener roles y permisos actuales
+      const roles = await Auth.getUserRoles(userId);
+      const permisos = await Auth.getUserPermissions(userId);
+
+      res.json({
+        roles,
+        permisos
+      });
+    } catch (error) {
+      console.error('Error al obtener permisos:', error);
       res.status(500).json({ message: 'Error en el servidor' });
     }
   }

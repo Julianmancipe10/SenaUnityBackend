@@ -1,2 +1,49 @@
 {"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-06T23:11:21.921Z"}
 {"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"¿Qué programas de formación ofrece el SENA?","timestamp":"2025-06-06T23:16:29.497Z","tokens":358}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:46:09.573Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:48:40.082Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:48:57.014Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:48:57.809Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:49:06.278Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:49:07.281Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:52:01.135Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:54:41.972Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:54:49.351Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:55:00.860Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:55:33.913Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T13:55:34.975Z"}
+{"apiVersion":"Configurado","deployment":"No configurado","endpoint":"No configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:09:53.963Z"}
+{"level":"warn","message":"Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible","missingVars":["AZURE_OPENAI_ENDPOINT","AZURE_OPENAI_KEY","AZURE_OPENAI_DEPLOYMENT_NAME"],"timestamp":"2025-06-09T14:09:53.966Z"}
+{"apiVersion":"Configurado","deployment":"No configurado","endpoint":"No configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:10:14.366Z"}
+{"level":"warn","message":"Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible","missingVars":["AZURE_OPENAI_ENDPOINT","AZURE_OPENAI_KEY","AZURE_OPENAI_DEPLOYMENT_NAME"],"timestamp":"2025-06-09T14:10:14.370Z"}
+{"apiVersion":"Configurado","deployment":"No configurado","endpoint":"No configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:11:10.700Z"}
+{"level":"warn","message":"Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible","missingVars":["AZURE_OPENAI_ENDPOINT","AZURE_OPENAI_KEY","AZURE_OPENAI_DEPLOYMENT_NAME"],"timestamp":"2025-06-09T14:11:10.704Z"}
+{"apiVersion":"Configurado","deployment":"No configurado","endpoint":"No configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:11:38.714Z"}
+{"level":"warn","message":"Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible","missingVars":["AZURE_OPENAI_ENDPOINT","AZURE_OPENAI_KEY","AZURE_OPENAI_DEPLOYMENT_NAME"],"timestamp":"2025-06-09T14:11:38.717Z"}
+{"apiVersion":"Configurado","deployment":"No configurado","endpoint":"No configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:13:13.664Z"}
+{"level":"warn","message":"Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible","missingVars":["AZURE_OPENAI_ENDPOINT","AZURE_OPENAI_KEY","AZURE_OPENAI_DEPLOYMENT_NAME"],"timestamp":"2025-06-09T14:13:13.667Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:14:03.286Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:15:10.216Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:18:54.819Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:29:14.467Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:37:07.453Z"}
+{"apiVersion":"Configurado","deployment":"No configurado","endpoint":"No configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:37:33.958Z"}
+{"level":"warn","message":"Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible","missingVars":["AZURE_OPENAI_ENDPOINT","AZURE_OPENAI_KEY","AZURE_OPENAI_DEPLOYMENT_NAME"],"timestamp":"2025-06-09T14:37:33.961Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:39:47.135Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:39:54.119Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:40:10.511Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:40:12.058Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:40:13.594Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:42:00.031Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:43:46.950Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:45:29.142Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:48:22.099Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:48:31.568Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:48:33.614Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:50:16.659Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:50:29.740Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:51:17.797Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:54:40.195Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T14:57:39.061Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T15:03:29.852Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-09T15:05:58.591Z"}

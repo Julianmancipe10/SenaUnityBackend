@@ -29,7 +29,7 @@ const checkConnection = async (retries = 3) => {
                 SELECT TABLE_NAME 
                 FROM information_schema.tables 
                 WHERE table_schema = ? 
-                AND table_name IN ('Usuario', 'Roles', 'permiso', 'TipoUsuario', 'UsuarioPermisos')
+                AND table_name IN ('usuario', 'roles', 'permiso', 'tipousuario', 'usuariopermisos')
             `, [process.env.DB_NAME || 'senaunity']);
             
             console.log('Tablas encontradas:', results.map(r => r.TABLE_NAME));

@@ -10,6 +10,7 @@ class AzureOpenAIService {
     this.apiKey = process.env.AZURE_OPENAI_KEY;
     this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
     this.deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
+    this.isConfigured = false;
 
     // Configuración del logger
     this.logger = winston.createLogger({
@@ -31,7 +32,9 @@ class AzureOpenAIService {
     }
 
     this.validateConfiguration();
-    this.initializeClient();
+    if (this.isConfigured) {
+      this.initializeClient();
+    }
   }
 
   validateConfiguration() {
@@ -47,9 +50,12 @@ class AzureOpenAIService {
       if (!this.apiKey) missingVars.push('AZURE_OPENAI_KEY');
       if (!this.deployment) missingVars.push('AZURE_OPENAI_DEPLOYMENT_NAME');
       
-      this.logger.error("Faltan variables de entorno críticas", { missingVars });
-      throw new Error(`Faltan variables de entorno críticas para Azure OpenAI: ${missingVars.join(', ')}`);
+      this.logger.warn("Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible", { missingVars });
+      this.isConfigured = false;
+      return;
     }
+
+    this.isConfigured = true;
   }
 
   initializeClient() {
@@ -64,6 +70,10 @@ class AzureOpenAIService {
   }
 
   async generateResponse(messages, question, context = "") {
+    if (!this.isConfigured) {
+      throw new Error("El servicio de Azure OpenAI no está configurado. Por favor, configura las variables de entorno AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_KEY y AZURE_OPENAI_DEPLOYMENT_NAME para usar esta funcionalidad.");
+    }
+
     try {
       const response = await this.client.chat.completions.create({
         messages,

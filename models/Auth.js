@@ -23,7 +23,7 @@ class Auth {
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const [result] = await pool.promise().query(
-      'INSERT INTO usuario (Nombre, Apellido, Correo, Passaword, Documento) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO usuario (Nombre, Apellido, Correo, Password, Documento) VALUES (?, ?, ?, ?, ?)',
       [nombre, apellido, correo, hashedPassword, documento]
     );
     
@@ -33,8 +33,8 @@ class Auth {
   static async getUserRoles(userId) {
     const [roles] = await pool.promise().query(
       `SELECT r.Rol 
-       FROM Roles r 
-       JOIN TipoUsuario tu ON r.idUsuarioRoll = tu.Roles_idUsuarioRoll 
+       FROM roles r 
+       JOIN tipousuario tu ON r.idUsuarioRoll = tu.Roles_idUsuarioRoll 
        WHERE tu.Usuario_idUsuario = ?`,
       [userId]
     );
@@ -45,7 +45,7 @@ class Auth {
     const [permisos] = await pool.promise().query(
       `SELECT p.Nombre 
        FROM permiso p 
-       JOIN UsuarioPermisos up ON p.ID_Permiso = up.permiso_ID_Permiso 
+       JOIN usuariopermisos up ON p.ID_Permiso = up.permiso_ID_Permiso 
        WHERE up.Usuario_idUsuario = ? AND up.FechaLimite > NOW()`,
       [userId]
     );
@@ -53,7 +53,20 @@ class Auth {
   }
 
   static async verifyPassword(password, hashedPassword) {
-    return await bcrypt.compare(password, hashedPassword);
+    if (!password || !hashedPassword) {
+      console.error('Password o hash faltante:', { 
+        passwordProvided: !!password, 
+        hashProvided: !!hashedPassword 
+      });
+      return false;
+    }
+    
+    try {
+      return await bcrypt.compare(password, hashedPassword);
+    } catch (error) {
+      console.error('Error en bcrypt.compare:', error);
+      return false;
+    }
   }
 
   static validateEmail(email) {
