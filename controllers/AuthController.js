@@ -119,7 +119,7 @@ class AuthController {
           permisos
         },
         JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: '8h' } // Extendido a 8 horas para desarrollo
       );
 
       const refreshToken = jwt.sign(

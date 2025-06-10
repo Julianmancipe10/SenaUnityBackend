@@ -24,15 +24,33 @@ class UserController {
 
   static async updateProfile(req, res) {
     try {
+      console.log('🔍 UpdateProfile - Usuario autenticado:', req.user);
+      console.log('🔍 UpdateProfile - Datos recibidos:', req.body);
+      
       validateRequiredFields(req.body, ['nombre', 'apellido', 'correo']);
-      const { nombre, apellido, correo } = req.body;
+      const { nombre, apellido, correo, documento } = req.body;
+
+      // Obtener datos actuales del usuario para preservar el documento si no se envía
+      const currentUser = await User.findById(req.user.id);
+      if (!currentUser) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
 
       const existingUser = await User.findByEmail(correo);
       if (existingUser && existingUser.idUsuario !== req.user.id) {
         return res.status(400).json({ message: 'El correo ya está en uso' });
       }
 
-      const updated = await User.update(req.user.id, { nombre, apellido, correo });
+      // Usar documento actual si no se proporciona uno nuevo
+      const finalDocumento = documento || currentUser.Documento;
+
+      const updated = await User.update(req.user.id, { 
+        nombre, 
+        apellido, 
+        correo, 
+        documento: finalDocumento 
+      });
+      
       if (!updated) {
         return res.status(404).json({ message: 'Usuario no encontrado' });
       }
@@ -43,7 +61,8 @@ class UserController {
           id: req.user.id,
           nombre,
           apellido,
-          correo
+          correo,
+          documento: finalDocumento
         }
       });
     } catch (error) {

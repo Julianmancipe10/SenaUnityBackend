@@ -5,14 +5,20 @@ export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log('🔍 Auth middleware - Header recibido:', authHeader);
+  console.log('🔍 Auth middleware - Token extraído:', token ? token.substring(0, 20) + '...' : 'No token');
+
   if (!token) {
+    console.log('❌ Auth middleware - Token no proporcionado');
     return res.status(401).json({ message: 'Token no proporcionado' });
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
+      console.log('❌ Auth middleware - Error verificando token:', err.message);
       return res.status(403).json({ message: 'Token inválido' });
     }
+    console.log('✅ Auth middleware - Token válido para usuario:', user.id);
     req.user = user;
     next();
   });
