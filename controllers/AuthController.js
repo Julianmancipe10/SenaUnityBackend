@@ -196,12 +196,26 @@ class AuthController {
       const { observaciones } = req.body;
       const adminId = req.user.id;
 
+      // Validar que solicitudId sea un número válido
+      if (!solicitudId || isNaN(solicitudId)) {
+        return res.status(400).json({ message: 'ID de solicitud inválido' });
+      }
+
       await Auth.approveValidationRequest(solicitudId, adminId, observaciones);
       
       res.json({ message: 'Solicitud aprobada exitosamente' });
     } catch (error) {
       console.error('Error al aprobar solicitud:', error);
-      res.status(500).json({ message: 'Error en el servidor' });
+      
+      // Proporcionar mensajes de error más específicos
+      if (error.message.includes('no encontrada')) {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message.includes('ya procesada')) {
+        return res.status(400).json({ message: error.message });
+      }
+      
+      res.status(500).json({ message: error.message || 'Error en el servidor' });
     }
   }
 
@@ -217,12 +231,31 @@ class AuthController {
       const { observaciones } = req.body;
       const adminId = req.user.id;
 
+      // Validar que solicitudId sea un número válido
+      if (!solicitudId || isNaN(solicitudId)) {
+        return res.status(400).json({ message: 'ID de solicitud inválido' });
+      }
+
+      // Validar que las observaciones no estén vacías
+      if (!observaciones || observaciones.trim() === '') {
+        return res.status(400).json({ message: 'Las observaciones son requeridas para rechazar una solicitud' });
+      }
+
       await Auth.rejectValidationRequest(solicitudId, adminId, observaciones);
       
       res.json({ message: 'Solicitud rechazada exitosamente' });
     } catch (error) {
       console.error('Error al rechazar solicitud:', error);
-      res.status(500).json({ message: 'Error en el servidor' });
+      
+      // Proporcionar mensajes de error más específicos
+      if (error.message.includes('no encontrada')) {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message.includes('ya procesada')) {
+        return res.status(400).json({ message: error.message });
+      }
+      
+      res.status(500).json({ message: error.message || 'Error en el servidor' });
     }
   }
 }

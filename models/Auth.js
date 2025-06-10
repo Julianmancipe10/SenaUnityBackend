@@ -51,12 +51,9 @@ class Auth {
     );
   }
 
-  static async assignRoleToUser(userId, roleName, connection = null) {
-    // Usar la conexión proporcionada o crear una nueva
-    const db = connection || pool.promise();
-    
+  static async assignRoleToUser(userId, roleName) {
     // Obtener ID del rol
-    const [roles] = await db.query(
+    const [roles] = await pool.promise().query(
       'SELECT idUsuarioRoll FROM roles WHERE Rol = ?',
       [roleName]
     );
@@ -72,19 +69,35 @@ class Auth {
         'funcionario': '4'
       };
 
-      // Verificar si el usuario ya tiene este rol asignado
-      const [existingRole] = await db.query(
-        'SELECT idTipoUsuario FROM tipousuario WHERE Usuario_idUsuario = ? AND Roles_idUsuarioRoll = ?',
-        [userId, roleId]
+      await pool.promise().query(
+        'INSERT INTO tipousuario (Usuario_idUsuario, Roles_idUsuarioRoll, Tipo) VALUES (?, ?, ?)',
+        [userId, roleId, tipoMap[roleName]]
       );
+    }
+  }
 
-      // Solo insertar si no existe ya
-      if (existingRole.length === 0) {
-        await db.query(
-          'INSERT INTO tipousuario (Usuario_idUsuario, Roles_idUsuarioRoll, Tipo) VALUES (?, ?, ?)',
-          [userId, roleId, tipoMap[roleName]]
-        );
-      }
+  static async assignRoleToUserWithConnection(connection, userId, roleName) {
+    // Obtener ID del rol
+    const [roles] = await connection.query(
+      'SELECT idUsuarioRoll FROM roles WHERE Rol = ?',
+      [roleName]
+    );
+
+    if (roles.length > 0) {
+      const roleId = roles[0].idUsuarioRoll;
+      
+      // Mapear rol a tipo numérico
+      const tipoMap = {
+        'aprendiz': '1',
+        'instructor': '2', 
+        'administrador': '3',
+        'funcionario': '4'
+      };
+
+      await connection.query(
+        'INSERT INTO tipousuario (Usuario_idUsuario, Roles_idUsuarioRoll, Tipo) VALUES (?, ?, ?)',
+        [userId, roleId, tipoMap[roleName]]
+      );
     }
   }
 
@@ -129,19 +142,24 @@ class Auth {
 
       // Obtener la solicitud
       const [solicitudes] = await connection.query(
-        'SELECT * FROM solicitudesvalidacion WHERE idSolicitud = ?',
+        'SELECT * FROM solicitudesvalidacion WHERE idSolicitud = ? AND Estado = "pendiente"',
         [solicitudId]
       );
 
       if (solicitudes.length === 0) {
-        throw new Error('Solicitud no encontrada');
+        throw new Error('Solicitud no encontrada o ya procesada');
       }
 
       const solicitud = solicitudes[0];
 
-      // Verificar que la solicitud esté pendiente
-      if (solicitud.Estado !== 'pendiente') {
-        throw new Error('La solicitud ya ha sido procesada');
+      // Verificar que el usuario aún existe y está pendiente
+      const [usuarios] = await connection.query(
+        'SELECT * FROM usuario WHERE idUsuario = ? AND EstadoCuenta = "pendiente"',
+        [solicitud.Usuario_idUsuario]
+      );
+
+      if (usuarios.length === 0) {
+        throw new Error('Usuario no encontrado o ya procesado');
       }
 
       // Actualizar solicitud como aprobada
@@ -156,14 +174,15 @@ class Auth {
         ['activo', adminId, solicitud.Usuario_idUsuario]
       );
 
-      // Asignar rol al usuario usando la misma conexión de transacción
-      await this.assignRoleToUser(solicitud.Usuario_idUsuario, solicitud.TipoRol, connection);
+      // Asignar rol al usuario usando la conexión de la transacción
+      await this.assignRoleToUserWithConnection(connection, solicitud.Usuario_idUsuario, solicitud.TipoRol);
 
       await connection.commit();
       return true;
     } catch (error) {
       await connection.rollback();
-      throw error;
+      console.error('Error en approveValidationRequest:', error);
+      throw new Error(`Error al aprobar solicitud: ${error.message}`);
     } finally {
       connection.release();
     }
@@ -176,14 +195,16 @@ class Auth {
       await connection.beginTransaction();
 
       // Verificar que la solicitud existe y está pendiente
-      const [solicitud] = await connection.query(
-        'SELECT * FROM solicitudesvalidacion WHERE idSolicitud = ? AND Estado = "pendiente"',
+      const [solicitudes] = await connection.query(
+        'SELECT Usuario_idUsuario FROM solicitudesvalidacion WHERE idSolicitud = ? AND Estado = "pendiente"',
         [solicitudId]
       );
 
-      if (solicitud.length === 0) {
+      if (solicitudes.length === 0) {
         throw new Error('Solicitud no encontrada o ya procesada');
       }
+
+      const userId = solicitudes[0].Usuario_idUsuario;
 
       // Actualizar solicitud como rechazada
       await connection.query(
@@ -193,15 +214,16 @@ class Auth {
 
       // Cambiar estado de cuenta a rechazado
       await connection.query(
-        'UPDATE usuario SET EstadoCuenta = ? WHERE idUsuario = ?',
-        ['rechazado', solicitud[0].Usuario_idUsuario]
+        'UPDATE usuario SET EstadoCuenta = ?, ValidadoPor = ?, FechaValidacion = NOW() WHERE idUsuario = ?',
+        ['rechazado', adminId, userId]
       );
 
       await connection.commit();
       return true;
     } catch (error) {
       await connection.rollback();
-      throw error;
+      console.error('Error en rejectValidationRequest:', error);
+      throw new Error(`Error al rechazar solicitud: ${error.message}`);
     } finally {
       connection.release();
     }
