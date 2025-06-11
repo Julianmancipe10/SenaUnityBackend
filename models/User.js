@@ -31,11 +31,21 @@ class User {
   }
 
   static async update(id, userData) {
-    const { nombre, apellido, correo, documento } = userData;
-    const [result] = await pool.promise().query(
-      'UPDATE usuario SET Nombre = ?, Apellido = ?, Correo = ?, Documento = ? WHERE idUsuario = ?',
-      [nombre, apellido, correo, documento, id]
-    );
+    const { nombre, apellido, correo, documento, foto } = userData;
+    
+    // Construir la consulta dinámicamente dependiendo de si hay foto
+    let query = 'UPDATE usuario SET Nombre = ?, Apellido = ?, Correo = ?, Documento = ?';
+    let params = [nombre, apellido, correo, documento];
+    
+    if (foto !== undefined) {
+      query += ', Foto = ?';
+      params.push(foto);
+    }
+    
+    query += ' WHERE idUsuario = ?';
+    params.push(id);
+
+    const [result] = await pool.promise().query(query, params);
     return result.affectedRows > 0;
   }
 

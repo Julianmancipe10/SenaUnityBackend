@@ -4,9 +4,15 @@ import Upload from '../models/Upload.js';
 // Configuración de storage dinámico
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const category = req.body.category || req.params.category || '';
-    const uploadPath = Upload.getUploadPath(category);
-    cb(null, uploadPath);
+    // Para perfiles, usar directamente 'profiles'
+    if (file.fieldname === 'profileImage') {
+      const uploadPath = Upload.getUploadPath('profiles');
+      cb(null, uploadPath);
+    } else {
+      const category = req.body.category || req.params.category || '';
+      const uploadPath = Upload.getUploadPath(category);
+      cb(null, uploadPath);
+    }
   },
   filename: function (req, file, cb) {
     const userId = req.user?.id || null;
@@ -17,15 +23,27 @@ const storage = multer.diskStorage({
 
 // Filtro de archivos
 const fileFilter = (req, file, cb) => {
-  const category = req.body.category || req.params.category || '';
-  const allowedTypes = Upload.ALLOWED_TYPES[category] || [];
-  
-  const isValidType = Upload.validateFileType(file.originalname, allowedTypes);
-  
-  if (isValidType) {
-    cb(null, true);
+  // Para perfiles, usar tipos de perfiles
+  if (file.fieldname === 'profileImage') {
+    const allowedTypes = Upload.ALLOWED_TYPES['profiles'] || [];
+    const isValidType = Upload.validateFileType(file.originalname, allowedTypes);
+    
+    if (isValidType) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Tipo de archivo no permitido para perfil. Tipos permitidos: ${allowedTypes.join(', ')}`), false);
+    }
   } else {
-    cb(new Error(`Tipo de archivo no permitido para la categoría ${category}. Tipos permitidos: ${allowedTypes.join(', ')}`), false);
+    const category = req.body.category || req.params.category || '';
+    const allowedTypes = Upload.ALLOWED_TYPES[category] || [];
+    
+    const isValidType = Upload.validateFileType(file.originalname, allowedTypes);
+    
+    if (isValidType) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Tipo de archivo no permitido para la categoría ${category}. Tipos permitidos: ${allowedTypes.join(', ')}`), false);
+    }
   }
 };
 

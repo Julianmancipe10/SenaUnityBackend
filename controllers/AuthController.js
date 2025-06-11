@@ -138,6 +138,7 @@ class AuthController {
           correo: user.Correo,
           documento: user.Documento,
           rol: user.Rol,
+          foto: user.Foto,
           roles,
           permisos
         }

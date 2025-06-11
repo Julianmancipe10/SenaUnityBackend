@@ -14,7 +14,8 @@ class UserController {
         nombre: user.Nombre,
         apellido: user.Apellido,
         correo: user.Correo,
-        documento: user.Documento
+        documento: user.Documento,
+        foto: user.Foto
       });
     } catch (error) {
       console.error('Error al obtener perfil:', error);
@@ -24,11 +25,8 @@ class UserController {
 
   static async updateProfile(req, res) {
     try {
-      console.log('🔍 UpdateProfile - Usuario autenticado:', req.user);
-      console.log('🔍 UpdateProfile - Datos recibidos:', req.body);
-      
       validateRequiredFields(req.body, ['nombre', 'apellido', 'correo']);
-      const { nombre, apellido, correo, documento } = req.body;
+      const { nombre, apellido, correo, documento, password } = req.body;
 
       // Obtener datos actuales del usuario para preservar el documento si no se envía
       const currentUser = await User.findById(req.user.id);
@@ -44,25 +42,43 @@ class UserController {
       // Usar documento actual si no se proporciona uno nuevo
       const finalDocumento = documento || currentUser.Documento;
 
-      const updated = await User.update(req.user.id, { 
+      // Preparar datos para actualizar
+      const updateData = { 
         nombre, 
         apellido, 
         correo, 
         documento: finalDocumento 
-      });
+      };
+
+      // Si hay un archivo de imagen, agregarlo
+      if (req.file) {
+        updateData.foto = `/uploads/profiles/${req.file.filename}`;
+      }
+
+      // TODO: Manejar actualización de contraseña si se proporciona
+      if (password) {
+        // Aquí deberías hashear la nueva contraseña
+        console.log('⚠️ Actualización de contraseña pendiente de implementar');
+      }
+
+      const updated = await User.update(req.user.id, updateData);
       
       if (!updated) {
         return res.status(404).json({ message: 'Usuario no encontrado' });
       }
 
+      // Obtener el usuario actualizado para devolver los datos completos
+      const updatedUser = await User.findById(req.user.id);
+
       res.json({ 
         message: 'Perfil actualizado exitosamente',
         user: {
-          id: req.user.id,
-          nombre,
-          apellido,
-          correo,
-          documento: finalDocumento
+          id: updatedUser.idUsuario,
+          nombre: updatedUser.Nombre,
+          apellido: updatedUser.Apellido,
+          correo: updatedUser.Correo,
+          documento: updatedUser.Documento,
+          foto: updatedUser.Foto
         }
       });
     } catch (error) {

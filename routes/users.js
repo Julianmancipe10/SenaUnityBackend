@@ -1,10 +1,7 @@
 import express from 'express';
-import multer from 'multer';
 import UserController from '../controllers/UserController.js';
 import { authenticateToken } from '../middleware/auth.js';
-
-// Configurar multer para manejar FormData (sin archivos por ahora)
-const upload = multer();
+import { uploadProfile, handleUploadError } from '../middleware/uploadHandler.js';
 
 const router = express.Router();
 
@@ -16,7 +13,7 @@ const router = express.Router();
 router.get('/profile', authenticateToken, UserController.getProfile);
 
 // Actualizar perfil del usuario autenticado
-router.put('/profile', authenticateToken, upload.none(), UserController.updateProfile);
+router.put('/profile', authenticateToken, uploadProfile, handleUploadError, UserController.updateProfile);
 
 //////////////////////////////////////////////////////
 // 🔵 RUTAS CRUD GENERALES
