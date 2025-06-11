@@ -19,6 +19,9 @@ router.put('/profile', authenticateToken, uploadProfile, handleUploadError, User
 // 🔵 RUTAS CRUD GENERALES
 //////////////////////////////////////////////////////
 
+// Crear usuario (solo administradores)
+router.post('/', authenticateToken, UserController.createUser);
+
 // Obtener todos los usuarios
 router.get('/', UserController.getAllUsers);
 

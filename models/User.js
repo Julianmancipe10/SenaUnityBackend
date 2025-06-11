@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import bcrypt from 'bcrypt';
 
 class User {
   static async findById(id) {
@@ -28,6 +29,57 @@ class User {
       [email]
     );
     return users[0];
+  }
+
+  static async findByDocument(documento) {
+    const [users] = await pool.promise().query(
+      'SELECT * FROM usuario WHERE Documento = ?',
+      [documento]
+    );
+    return users[0];
+  }
+
+  static async createUserByAdmin(userData) {
+    const { nombre, apellido, correo, password, documento, rol } = userData;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Los usuarios creados por admin están activos inmediatamente y no requieren validación
+    const [result] = await pool.promise().query(
+      'INSERT INTO usuario (Nombre, Apellido, Correo, Password, Documento, Rol, EstadoCuenta, RequiereValidacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [nombre, apellido, correo, hashedPassword, documento, rol, 'activo', false]
+    );
+    
+    const userId = result.insertId;
+
+    // Asignar rol automáticamente
+    await this.assignRoleToUser(userId, rol);
+    
+    return userId;
+  }
+
+  static async assignRoleToUser(userId, roleName) {
+    // Obtener ID del rol
+    const [roles] = await pool.promise().query(
+      'SELECT idUsuarioRoll FROM roles WHERE Rol = ?',
+      [roleName]
+    );
+
+    if (roles.length > 0) {
+      const roleId = roles[0].idUsuarioRoll;
+      
+      // Mapear rol a tipo numérico
+      const tipoMap = {
+        'aprendiz': '1',
+        'instructor': '2', 
+        'administrador': '3',
+        'funcionario': '4'
+      };
+
+      await pool.promise().query(
+        'INSERT INTO tipousuario (Usuario_idUsuario, Roles_idUsuarioRoll, Tipo) VALUES (?, ?, ?)',
+        [userId, roleId, tipoMap[roleName]]
+      );
+    }
   }
 
   static async update(id, userData) {

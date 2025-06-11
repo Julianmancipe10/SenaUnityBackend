@@ -3,14 +3,14 @@ import rateLimit from 'express-rate-limit';
 // Configuración diferente para desarrollo vs producción
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Limitar intentos de inicio de sesión
+// Limitar intentos de inicio de sesión - DESACTIVADO
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: isDevelopment ? 1000 : 5, // 1000 intentos en desarrollo, 5 en producción
+  max: 9999999, // Límite muy alto para efectivamente desactivar la limitación
   message: { message: 'Demasiados intentos de inicio de sesión. Intenta nuevamente en 15 minutos.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: isDevelopment ? () => false : undefined, // En desarrollo, aplicar el límite pero con valor alto
+  skip: () => true, // Saltar el límite para todas las solicitudes
 });
 
 // Limitar registros
