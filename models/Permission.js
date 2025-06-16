@@ -2,7 +2,7 @@ import pool from '../config/db.js';
 
 class Permission {
   static async findAll() {
-    const [permisos] = await pool.promise().query('SELECT * FROM permiso');
+    const [permisos] = await pool.promise().query('SELECT * FROM permiso ORDER BY Nombre');
     return permisos;
   }
 
@@ -11,19 +11,44 @@ class Permission {
       SELECT p.*, up.FechaLimite 
       FROM UsuarioPermisos up 
       JOIN permiso p ON up.permiso_ID_Permiso = p.ID_Permiso 
-      WHERE up.Usuario_idUsuario = ?
+      WHERE up.Usuario_idUsuario = ? 
+      AND up.FechaLimite > NOW()
+      ORDER BY p.Nombre
     `, [userId]);
     return permisos;
   }
 
-  static async checkUserPermission(userId, permisoId) {
-    const [permisos] = await pool.promise().query(`
-      SELECT * FROM UsuarioPermisos 
-      WHERE Usuario_idUsuario = ? 
-      AND permiso_ID_Permiso = ? 
-      AND FechaLimite > NOW()
-    `, [userId, permisoId]);
+  static async checkUserPermission(userId, permisoIdentifier) {
+    let query;
+    let params;
+
+    // Verificar si el identificador es un número (ID) o texto (nombre)
+    if (typeof permisoIdentifier === 'number' || !isNaN(permisoIdentifier)) {
+      query = `
+        SELECT * FROM UsuarioPermisos up
+        WHERE up.Usuario_idUsuario = ? 
+        AND up.permiso_ID_Permiso = ? 
+        AND up.FechaLimite > NOW()
+      `;
+      params = [userId, permisoIdentifier];
+    } else {
+      query = `
+        SELECT up.* FROM UsuarioPermisos up
+        JOIN permiso p ON up.permiso_ID_Permiso = p.ID_Permiso
+        WHERE up.Usuario_idUsuario = ? 
+        AND p.Nombre = ? 
+        AND up.FechaLimite > NOW()
+      `;
+      params = [userId, permisoIdentifier];
+    }
+
+    const [permisos] = await pool.promise().query(query, params);
     return permisos.length > 0;
+  }
+
+  static async getPermissionByName(nombre) {
+    const [permisos] = await pool.promise().query('SELECT * FROM permiso WHERE Nombre = ?', [nombre]);
+    return permisos[0] || null;
   }
 
   static async assignPermissionsToUser(userId, permisos, fechaLimite) {
@@ -32,14 +57,35 @@ class Permission {
     try {
       await connection.beginTransaction();
 
-      // Eliminar permisos existentes
+      // Eliminar permisos existentes del usuario
       await connection.query(
         'DELETE FROM UsuarioPermisos WHERE Usuario_idUsuario = ?',
         [userId]
       );
 
-      // Insertar nuevos permisos
-      for (const permisoId of permisos) {
+      // Procesar cada permiso
+      for (const permisoIdentifier of permisos) {
+        let permisoId;
+
+        // Si es un número, usar como ID directo
+        if (typeof permisoIdentifier === 'number' || !isNaN(permisoIdentifier)) {
+          permisoId = permisoIdentifier;
+        } else {
+          // Si es texto, buscar el ID por nombre
+          const [permisoData] = await connection.query(
+            'SELECT ID_Permiso FROM permiso WHERE Nombre = ?',
+            [permisoIdentifier]
+          );
+          
+          if (permisoData.length === 0) {
+            console.warn(`Permiso no encontrado: ${permisoIdentifier}`);
+            continue; // Saltar este permiso si no existe
+          }
+          
+          permisoId = permisoData[0].ID_Permiso;
+        }
+
+        // Insertar el permiso
         await connection.query(
           'INSERT INTO UsuarioPermisos (FechaLimite, permiso_ID_Permiso, Usuario_idUsuario) VALUES (?, ?, ?)',
           [fechaLimite, permisoId, userId]
@@ -62,6 +108,19 @@ class Permission {
       [userId]
     );
     return result.affectedRows > 0;
+  }
+
+  // Método para obtener permisos activos de un usuario con nombres
+  static async getUserPermissionsWithNames(userId) {
+    const [permisos] = await pool.promise().query(`
+      SELECT p.Nombre, p.ID_Permiso, up.FechaLimite 
+      FROM UsuarioPermisos up 
+      JOIN permiso p ON up.permiso_ID_Permiso = p.ID_Permiso 
+      WHERE up.Usuario_idUsuario = ? 
+      AND up.FechaLimite > NOW()
+      ORDER BY p.Nombre
+    `, [userId]);
+    return permisos;
   }
 }
 

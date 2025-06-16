@@ -21,14 +21,25 @@ class PermissionController {
       validateId(userId);
 
       // Validar que permisos sea un array
-      if (!Array.isArray(permisos) || permisos.length === 0) {
-        return res.status(400).json({ message: 'Los permisos deben ser un array con al menos un elemento' });
+      if (!Array.isArray(permisos)) {
+        return res.status(400).json({ message: 'Los permisos deben ser un array' });
+      }
+
+      // Permitir array vacío para remover todos los permisos
+      if (permisos.length === 0) {
+        await Permission.removeUserPermissions(userId);
+        return res.json({ message: 'Todos los permisos han sido removidos exitosamente' });
       }
 
       // Validar fecha límite
       const fecha = new Date(fechaLimite);
       if (isNaN(fecha.getTime())) {
         return res.status(400).json({ message: 'Fecha límite inválida' });
+      }
+
+      // Verificar que la fecha no sea en el pasado
+      if (fecha < new Date()) {
+        return res.status(400).json({ message: 'La fecha límite no puede ser en el pasado' });
       }
 
       await Permission.assignPermissionsToUser(userId, permisos, fechaLimite);
@@ -45,7 +56,10 @@ class PermissionController {
   static async getUserPermissions(req, res) {
     try {
       const userId = validateId(req.params.userId);
-      const permissions = await Permission.findByUserId(userId);
+      
+      // Usar el nuevo método que incluye nombres de permisos
+      const permissions = await Permission.getUserPermissionsWithNames(userId);
+      
       res.json(permissions);
     } catch (error) {
       if (error.message === 'ID inválido') {
@@ -59,7 +73,7 @@ class PermissionController {
   static async checkUserPermission(req, res) {
     try {
       const userId = validateId(req.params.userId);
-      const permisoId = validateId(req.params.permisoId);
+      const { permisoId } = req.params;
       
       const hasPermission = await Permission.checkUserPermission(userId, permisoId);
       res.json({ hasPermission });
@@ -88,6 +102,28 @@ class PermissionController {
       }
       console.error('Error al eliminar permisos:', error);
       res.status(500).json({ message: 'Error al eliminar permisos' });
+    }
+  }
+
+  // Nuevo método para obtener permisos por nombre
+  static async getPermissionByName(req, res) {
+    try {
+      const { nombre } = req.params;
+      
+      if (!nombre) {
+        return res.status(400).json({ message: 'Nombre del permiso es requerido' });
+      }
+
+      const permission = await Permission.getPermissionByName(nombre);
+      
+      if (!permission) {
+        return res.status(404).json({ message: 'Permiso no encontrado' });
+      }
+      
+      res.json(permission);
+    } catch (error) {
+      console.error('Error al obtener permiso por nombre:', error);
+      res.status(500).json({ message: 'Error al obtener permiso por nombre' });
     }
   }
 }

@@ -22,8 +22,8 @@ router.put('/profile', authenticateToken, uploadProfile, handleUploadError, User
 // Crear usuario (solo administradores)
 router.post('/', authenticateToken, UserController.createUser);
 
-// Obtener todos los usuarios
-router.get('/', UserController.getAllUsers);
+// Obtener todos los usuarios (requiere autenticación)
+router.get('/', authenticateToken, UserController.getAllUsers);
 
 // Obtener un usuario específico por ID
 router.get('/:id', UserController.getUserById);
