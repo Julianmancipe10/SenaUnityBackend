@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS senaunity.Publicaciones (
   Usuario_idUsuario INT NOT NULL,
   Ubicacion VARCHAR(255) NOT NULL,
   enlace_ID_Enlace INT NULL,
-  TipoPublicacion ENUM("1", "2") NOT NULL COMMENT '1=Evento, 2=Noticia',
+  TipoPublicacion ENUM("1", "2", "3", "4") NOT NULL COMMENT '1=Evento, 2=Noticia, 3=Curso, 4=Tecnólogo',
   FechaCreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (ID_Evento),
   INDEX fk_evento_Usuario1_idx (Usuario_idUsuario ASC) VISIBLE,

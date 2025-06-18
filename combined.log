@@ -161,3 +161,10 @@
 {"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-12T23:32:28.361Z"}
 {"hasContext":false,"level":"info","message":"Respuesta generada exitosamente","question":"¿Qué programas de formación ofrece el SENA?","timestamp":"2025-06-13T12:15:47.370Z","tokens":351}
 {"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-16T11:23:30.278Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-17T18:08:36.163Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-17T18:08:45.680Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-17T22:35:28.100Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-17T22:37:12.882Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-17T22:40:12.904Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-17T22:47:56.684Z"}
+{"apiVersion":"Configurado","deployment":"Configurado","endpoint":"Configurado","level":"info","message":"Configuración de OpenAI cargada","timestamp":"2025-06-17T22:53:03.192Z"}
