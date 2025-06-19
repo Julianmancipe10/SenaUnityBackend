@@ -10,14 +10,21 @@ import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import faqRoute from './routes/faq.js';
 import permissionsRoutes from './routes/permissions.js';
+import publicacionesRoutes from './routes/publicaciones.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Crear directorio uploads si no existe
+// Crear directorios uploads si no existen
 const uploadsDir = join(__dirname, 'uploads');
+const publicacionesDir = join(__dirname, 'uploads/publicaciones');
+
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+if (!fs.existsSync(publicacionesDir)) {
+    fs.mkdirSync(publicacionesDir, { recursive: true });
 }
 
 console.log("Endpoint:", process.env.AZURE_OPENAI_ENDPOINT);
@@ -42,6 +49,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/faq', faqRoute);
 app.use('/api/permissions', permissionsRoutes);
+app.use('/api/publicaciones', publicacionesRoutes);
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
