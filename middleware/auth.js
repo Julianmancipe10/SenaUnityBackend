@@ -24,6 +24,28 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
+export const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    // No hay token, continuar sin autenticar
+    req.user = null;
+    return next();
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      // Token inválido, continuar sin autenticar
+      req.user = null;
+    } else {
+      // Token válido, agregar usuario a req
+      req.user = user;
+    }
+    next();
+  });
+};
+
 export const checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     try {

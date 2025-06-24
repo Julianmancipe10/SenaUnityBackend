@@ -187,6 +187,7 @@ CREATE TABLE IF NOT EXISTS senaunity.Publicaciones (
   Responsable INT NOT NULL,
   Usuario_idUsuario INT NOT NULL,
   Ubicacion VARCHAR(255) NOT NULL,
+  URL_Enlace VARCHAR(500) NULL,
   enlace_ID_Enlace INT NULL,
   TipoPublicacion ENUM("1", "2", "3", "4") NOT NULL COMMENT '1=Evento, 2=Noticia, 3=Curso, 4=Tecnólogo',
   FechaCreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -306,6 +307,55 @@ CREATE TABLE IF NOT EXISTS senaunity.SolicitudesValidacion (
     FOREIGN KEY (AdministradorValidador)
     REFERENCES senaunity.Usuario (idUsuario)
     ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table senaunity.PerfilInstructor
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS senaunity.PerfilInstructor (
+  idPerfil INT NOT NULL AUTO_INCREMENT,
+  Usuario_idUsuario INT NOT NULL,
+  Especialidad VARCHAR(255) NULL,
+  Experiencia TEXT NULL,
+  Cursos JSON NULL COMMENT 'Array JSON de cursos que enseña',
+  Biografia TEXT NULL,
+  FechaCreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FechaActualizacion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (idPerfil),
+  UNIQUE INDEX Usuario_idUsuario_UNIQUE (Usuario_idUsuario ASC) VISIBLE,
+  CONSTRAINT fk_perfil_instructor_usuario
+    FOREIGN KEY (Usuario_idUsuario)
+    REFERENCES senaunity.Usuario (idUsuario)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table senaunity.CalificacionInstructor
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS senaunity.CalificacionInstructor (
+  idCalificacion INT NOT NULL AUTO_INCREMENT,
+  Instructor_idUsuario INT NOT NULL,
+  Estudiante_idUsuario INT NOT NULL,
+  Calificacion DECIMAL(2,1) NOT NULL CHECK (Calificacion >= 1 AND Calificacion <= 5),
+  Comentario TEXT NULL,
+  FechaCalificacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+  EstadoCalificacion ENUM('activa', 'reportada', 'eliminada') DEFAULT 'activa',
+  PRIMARY KEY (idCalificacion),
+  INDEX fk_calificacion_instructor_idx (Instructor_idUsuario ASC) VISIBLE,
+  INDEX fk_calificacion_estudiante_idx (Estudiante_idUsuario ASC) VISIBLE,
+  INDEX idx_fecha_calificacion (FechaCalificacion),
+  UNIQUE INDEX unique_calificacion_per_student (Instructor_idUsuario, Estudiante_idUsuario) VISIBLE,
+  CONSTRAINT fk_calificacion_instructor
+    FOREIGN KEY (Instructor_idUsuario)
+    REFERENCES senaunity.Usuario (idUsuario)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_calificacion_estudiante
+    FOREIGN KEY (Estudiante_idUsuario)
+    REFERENCES senaunity.Usuario (idUsuario)
+    ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE = InnoDB;
 
@@ -518,6 +568,165 @@ INSERT INTO senaunity.TipoUsuario (
     '2'
 );
 
+-- 📝 INSERTAR PERFILES DE INSTRUCTORES Y FUNCIONARIOS
+-- Perfil para Daniel Lozano (funcionario)
+INSERT INTO senaunity.PerfilInstructor (
+    Usuario_idUsuario,
+    Especialidad,
+    Experiencia,
+    Cursos,
+    Biografia
+) VALUES (
+    @instructor_id,
+    'Gestión de Proyectos y Metodologías Ágiles',
+    '8 años de experiencia en gestión de proyectos tecnológicos y 4 años como funcionario en el SENA',
+    JSON_ARRAY('Gestión de Proyectos', 'Metodologías Ágiles', 'Scrum Master', 'Liderazgo de Equipos'),
+    'Funcionario especializado en la gestión de proyectos tecnológicos con amplia experiencia en metodologías ágiles. Comprometido con la formación integral de los aprendices.'
+);
+
+-- Perfil para María García (instructor)
+INSERT INTO senaunity.PerfilInstructor (
+    Usuario_idUsuario,
+    Especialidad,
+    Experiencia,
+    Cursos,
+    Biografia
+) VALUES (
+    @funcionario_id,
+    'Desarrollo de Software y Programación',
+    '10 años en desarrollo de software y 6 años como instructora',
+    JSON_ARRAY('Node.js', 'Python', 'Bases de Datos', 'Desarrollo Web', 'JavaScript'),
+    'Instructora especializada en desarrollo de software con enfoque en tecnologías web modernas. Apasionada por enseñar programación a las nuevas generaciones.'
+);
+
+-- Insertar más instructores de prueba para tener variedad
+INSERT INTO senaunity.Usuario (
+    Nombre, 
+    Apellido, 
+    Correo, 
+    Documento, 
+    Password, 
+    Rol,
+    EstadoCuenta,
+    RequiereValidacion
+) VALUES 
+('Carlos', 'Rodríguez', 'carlos.rodriguez@senaunity.com', '1111222233', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'instructor', 'activo', FALSE),
+('Ana María', 'López', 'ana.lopez@senaunity.com', '2222333344', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'instructor', 'activo', FALSE),
+('Juan Pablo', 'Martínez', 'juan.martinez@senaunity.com', '3333444455', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'funcionario', 'activo', FALSE),
+('Laura', 'Gómez', 'laura.gomez@senaunity.com', '4444555566', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'instructor', 'activo', FALSE);
+
+-- Obtener IDs de los nuevos usuarios
+SET @carlos_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'carlos.rodriguez@senaunity.com');
+SET @ana_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'ana.lopez@senaunity.com');
+SET @juan_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'juan.martinez@senaunity.com');
+SET @laura_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'laura.gomez@senaunity.com');
+
+-- Asignar roles a los nuevos usuarios
+INSERT INTO senaunity.TipoUsuario (Usuario_idUsuario, Roles_idUsuarioRoll, Tipo) VALUES 
+(@carlos_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'instructor'), '2'),
+(@ana_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'instructor'), '2'),
+(@juan_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'funcionario'), '4'),
+(@laura_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'instructor'), '2');
+
+-- Crear perfiles para los nuevos instructores
+INSERT INTO senaunity.PerfilInstructor (Usuario_idUsuario, Especialidad, Experiencia, Cursos, Biografia) VALUES 
+(@carlos_id, 'Desarrollo Web Frontend', '8 años de experiencia en desarrollo web y 5 años como instructor', JSON_ARRAY('React JS', 'JavaScript Avanzado', 'HTML5 y CSS3', 'Vue.js'), 'Instructor especializado en tecnologías frontend modernas con amplia experiencia en frameworks JavaScript.'),
+(@ana_id, 'Desarrollo Backend', '10 años en desarrollo de software y 6 años como instructora', JSON_ARRAY('Node.js', 'Python', 'Bases de Datos', 'APIs REST'), 'Instructora experta en desarrollo backend con enfoque en arquitecturas escalables y buenas prácticas.'),
+(@juan_id, 'Diseño UX/UI', '7 años en diseño de interfaces y 4 años como funcionario', JSON_ARRAY('Diseño de Interfaces', 'Figma Avanzado', 'Principios de UX', 'Prototipado'), 'Funcionario especializado en experiencia de usuario y diseño de interfaces modernas.'),
+(@laura_id, 'Ciencia de Datos', '9 años en análisis de datos y 4 años como instructora', JSON_ARRAY('Machine Learning', 'Python para Data Science', 'Big Data', 'Análisis Estadístico'), 'Instructora especializada en ciencia de datos y análisis predictivo con enfoque práctico.');
+
+-- 🎓 INSERTAR USUARIOS APRENDICES DE PRUEBA
+-- Insertar aprendices para probar el sistema de calificaciones
+INSERT INTO senaunity.Usuario (
+    Nombre, 
+    Apellido, 
+    Correo, 
+    Documento, 
+    Password, 
+    Rol,
+    EstadoCuenta,
+    RequiereValidacion
+) VALUES 
+('Santiago', 'Rodríguez', 'santiago.rodriguez@ejemplo.com', '1000123456', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'aprendiz', 'activo', FALSE),
+('Valentina', 'García', 'valentina.garcia@ejemplo.com', '1000234567', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'aprendiz', 'activo', FALSE),
+('Andrés', 'López', 'andres.lopez@ejemplo.com', '1000345678', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'aprendiz', 'activo', FALSE),
+('Camila', 'Martínez', 'camila.martinez@ejemplo.com', '1000456789', '$2b$10$aVNrhWC9O5ka9HMdosjCcOGpfV9LQZmHpSm8nfdC7Tgt1Zc3qGZke', 'aprendiz', 'activo', FALSE);
+
+-- Obtener IDs de los aprendices
+SET @santiago_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'santiago.rodriguez@ejemplo.com');
+SET @valentina_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'valentina.garcia@ejemplo.com');
+SET @andres_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'andres.lopez@ejemplo.com');
+SET @camila_id = (SELECT idUsuario FROM senaunity.Usuario WHERE Correo = 'camila.martinez@ejemplo.com');
+
+-- Asignar roles de aprendiz
+INSERT INTO senaunity.TipoUsuario (Usuario_idUsuario, Roles_idUsuarioRoll, Tipo) VALUES 
+(@santiago_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'aprendiz'), '1'),
+(@valentina_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'aprendiz'), '1'),
+(@andres_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'aprendiz'), '1'),
+(@camila_id, (SELECT idUsuarioRoll FROM senaunity.Roles WHERE Rol = 'aprendiz'), '1');
+
+-- Insertar calificaciones de prueba (ahora con aprendices reales)
+INSERT INTO senaunity.CalificacionInstructor (Instructor_idUsuario, Estudiante_idUsuario, Calificacion, Comentario) VALUES 
+(@carlos_id, @santiago_id, 4.5, 'Excelente instructor, muy claro en sus explicaciones de React y JavaScript'),
+(@carlos_id, @valentina_id, 5.0, 'El mejor instructor de frontend que he tenido, muy paciente'),
+(@ana_id, @andres_id, 5.0, 'Increíble instructora de backend, domina Python y Node.js perfectamente'),
+(@ana_id, @camila_id, 4.8, 'Muy buena enseñando bases de datos, sus ejemplos son muy claros'),
+(@juan_id, @santiago_id, 4.0, 'Buen funcionario para UX/UI, me ayudó mucho con Figma'),
+(@laura_id, @valentina_id, 4.5, 'Excelente instructora de ciencia de datos, muy didáctica'),
+(@laura_id, @andres_id, 4.7, 'Sus clases de Machine Learning son muy completas'),
+-- Calificar también a Daniel y María (los usuarios iniciales)
+(@instructor_id, @santiago_id, 4.3, 'Buen funcionario para gestión de proyectos'),
+(@funcionario_id, @camila_id, 4.6, 'Muy buena instructora de programación');
+
+-- 📅 INSERTAR EVENTOS Y PUBLICACIONES DE PRUEBA
+-- Insertar algunos eventos de prueba
+INSERT INTO senaunity.Publicaciones (
+    Nombre, 
+    Descripción, 
+    Fecha, 
+    Ubicacion, 
+    URL_Enlace, 
+    TipoPublicacion, 
+    Usuario_idUsuario, 
+    Responsable,
+    Estado
+) VALUES 
+('Feria de Proyectos SENA 2025', 'Exposición de los mejores proyectos desarrollados por nuestros aprendices durante el año 2024. Una oportunidad única para conocer las innovaciones tecnológicas.', '2025-03-15 09:00:00', 'Centro de Comercio y Turismo - Quindío', 'https://docs.google.com/forms/feria-proyectos-2025', '1', @admin_id, @admin_id, 'Activo'),
+('Taller de Inteligencia Artificial', 'Taller práctico sobre las últimas tendencias en IA y Machine Learning. Dirigido a instructores y aprendices avanzados.', '2025-02-20 14:00:00', 'Laboratorio de Sistemas', 'https://meet.google.com/workshop-ia-sena', '1', @carlos_id, @carlos_id, 'Activo'),
+('Conferencia de Ciberseguridad', 'Charla magistral sobre las amenazas actuales en ciberseguridad y cómo proteger nuestros sistemas.', '2025-02-28 10:00:00', 'Auditorio Principal', NULL, '1', @ana_id, @ana_id, 'Activo');
+
+-- Insertar algunas noticias de prueba
+INSERT INTO senaunity.Publicaciones (
+    Nombre, 
+    Descripción, 
+    Fecha, 
+    Ubicacion, 
+    URL_Enlace, 
+    TipoPublicacion, 
+    Usuario_idUsuario, 
+    Responsable,
+    Estado
+) VALUES 
+('SENA Quindío obtiene reconocimiento nacional', 'Nuestro centro ha sido reconocido por el Ministerio de Educación por su excelencia en formación tecnológica y sus altos índices de empleabilidad.', '2025-01-15 08:00:00', 'Centro de Comercio y Turismo', 'https://www.sena.edu.co/noticias/reconocimiento-2025', '2', @admin_id, @admin_id, 'Activo'),
+('Nuevos laboratorios de realidad virtual', 'Inauguramos modernas instalaciones equipadas con tecnología de punta para la formación en realidad virtual y aumentada.', '2025-01-20 09:00:00', 'Edificio de Innovación', NULL, '2', @admin_soporte_id, @admin_soporte_id, 'Activo'),
+('Alianza estratégica con empresas del sector TI', 'Firmamos convenios con 15 empresas tecnológicas para garantizar prácticas profesionales y empleabilidad a nuestros egresados.', '2025-01-25 11:00:00', 'Sala de Juntas', 'https://alianzas.sena.edu.co/convenios-ti', '2', @admin_id, @admin_id, 'Activo');
+
+-- Insertar algunas carreras técnicas y tecnológicas
+INSERT INTO senaunity.Publicaciones (
+    Nombre, 
+    Descripción, 
+    Fecha, 
+    Ubicacion, 
+    URL_Enlace, 
+    TipoPublicacion, 
+    Usuario_idUsuario, 
+    Responsable,
+    Estado
+) VALUES 
+('Técnico en Programación de Software', 'Formación integral en desarrollo de aplicaciones web y móviles. Duración: 1980 horas. Título: Técnico en Programación de Software.', '2025-12-31 23:59:59', 'Centro de Comercio y Turismo - Quindío', 'https://oferta.senasofiaplus.edu.co/programacion-software', '3', @carlos_id, @carlos_id, 'Activo'),
+('Tecnólogo en Análisis y Desarrollo de Sistemas de Información', 'Programa tecnológico enfocado en el diseño y desarrollo de sistemas empresariales. Duración: 2640 horas. Título: Tecnólogo en ADSI.', '2025-12-31 23:59:59', 'Centro de Comercio y Turismo - Quindío', 'https://oferta.senasofiaplus.edu.co/adsi', '4', @ana_id, @ana_id, 'Activo'),
+('Técnico en Sistemas', 'Formación en mantenimiento, configuración y soporte de sistemas informáticos. Duración: 1760 horas. Título: Técnico en Sistemas.', '2025-12-31 23:59:59', 'Centro de Comercio y Turismo - Quindío', 'https://oferta.senasofiaplus.edu.co/sistemas', '3', @laura_id, @laura_id, 'Activo');
+
 -- 📊 VERIFICACIÓN DEL SISTEMA
 -- Mostrar resumen de la configuración
 SELECT '🎉 SENAUNITY - Base de Datos Creada Exitosamente' as status;
@@ -542,7 +751,10 @@ ORDER BY u.Nombre, p.Nombre;
 
 SELECT '✅ Sistema de Permisos Listo para Usar' as status;
 SELECT '👤 Login Admin: admin@senaunity.com / Admin2024*' as credentials;
-SELECT '📋 Usuarios de prueba creados para testing' as testing_info;
+SELECT '📋 Usuarios de prueba creados para testing:' as testing_info;
+SELECT '🎓 Aprendices: santiago.rodriguez@ejemplo.com, valentina.garcia@ejemplo.com, andres.lopez@ejemplo.com, camila.martinez@ejemplo.com (Password: Admin2024*)' as aprendices_info;
+SELECT '👨‍🏫 Instructores: maria.garcia@senaunity.com, carlos.rodriguez@senaunity.com, ana.lopez@senaunity.com, laura.gomez@senaunity.com (Password: Admin2024*)' as instructores_info;
+SELECT '👔 Funcionarios: julia@gmail.com, juan.martinez@senaunity.com (Password: Admin2024*)' as funcionarios_info;
 
 -- Reactivar verificaciones
 SET SQL_MODE=@OLD_SQL_MODE;

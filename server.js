@@ -11,6 +11,7 @@ import userRoutes from './routes/users.js';
 import faqRoute from './routes/faq.js';
 import permissionsRoutes from './routes/permissions.js';
 import publicacionesRoutes from './routes/publicaciones.js';
+import instructoresRoutes from './routes/instructores.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -50,6 +51,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/faq', faqRoute);
 app.use('/api/permissions', permissionsRoutes);
 app.use('/api/publicaciones', publicacionesRoutes);
+app.use('/api/instructores', instructoresRoutes);
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
