@@ -1,26 +1,20 @@
 import mysql from 'mysql2';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
 
 dotenv.config();
 
 const pool = mysql.createPool({
-    host: 'bdsena.mysql.database.azure.com',
-    port: 3306,
-    user: 'Juli',
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME || 'senaunity',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    connectTimeout: 30000,
+    connectTimeout: 60000,
     enableKeepAlive: true,
-    keepAliveInitialDelay: 10000,
-    ssl: {
-        ca: fs.readFileSync(path.join(process.cwd(), 'DigiCertGlobalRootCA.crt.pem')),
-        rejectUnauthorized: true
-    }
+    keepAliveInitialDelay: 10000
 });
 
 // Función para verificar la conexión con reintentos
@@ -35,16 +29,10 @@ const checkConnection = async (retries = 3) => {
                 SELECT TABLE_NAME 
                 FROM information_schema.tables 
                 WHERE table_schema = ? 
-                AND table_name IN ('Usuario', 'Roles', 'permiso', 'TipoUsuario', 'UsuarioPermisos')
+                AND table_name IN ('usuario', 'roles', 'permiso', 'tipousuario', 'usuariopermisos')
             `, [process.env.DB_NAME || 'senaunity']);
             
             console.log('Tablas encontradas:', results.map(r => r.TABLE_NAME));
-            
-            if (results.length < 3) {
-                console.log('Algunas tablas pueden estar faltando, pero el servidor continuará funcionando');
-            } else {
-                console.log('Todas las tablas principales existen');
-            }
             
             connection.release();
             return true;
@@ -53,15 +41,15 @@ const checkConnection = async (retries = 3) => {
             if (i === retries - 1) {
                 console.error('Error al conectar con la base de datos después de varios intentos:', err);
                 console.error('Configuración actual:', {
-                    host: process.env.DB_HOST,
-                    port: process.env.DB_PORT,
-                    user: process.env.DB_USER,
-                    database: process.env.DB_NAME
+                    host: process.env.DB_HOST || 'localhost',
+                    port: process.env.DB_PORT || 3306,
+                    user: process.env.DB_USER || 'root',
+                    database: process.env.DB_NAME || 'senaunity'
                 });
                 return false;
             }
             // Esperar antes del siguiente intento
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
         }
     }
     return false;
@@ -89,4 +77,4 @@ pool.on('error', (err) => {
     }
 });
 
-export { pool }; 
+export default pool; 
