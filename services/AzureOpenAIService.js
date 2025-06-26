@@ -6,67 +6,84 @@ dotenv.config();
 
 class AzureOpenAIService {
   constructor() {
-    this.endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-    this.apiKey = process.env.AZURE_OPENAI_KEY;
-    this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
-    this.deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
-    this.isConfigured = false;
+    try {
+      this.endpoint = process.env.AZURE_OPENAI_ENDPOINT;
+      this.apiKey = process.env.AZURE_OPENAI_KEY;
+      this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
+      this.deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
+      this.isConfigured = false;
 
-    // Configuración del logger
-    this.logger = winston.createLogger({
-      level: 'info',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
-      transports: [
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'combined.log' })
-      ]
-    });
+      // Configuración del logger
+      this.logger = winston.createLogger({
+        level: 'info',
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json()
+        ),
+        transports: [
+          new winston.transports.File({ filename: 'error.log', level: 'error' }),
+          new winston.transports.File({ filename: 'combined.log' })
+        ]
+      });
 
-    if (process.env.NODE_ENV !== 'production') {
-      this.logger.add(new winston.transports.Console({
-        format: winston.format.simple()
-      }));
-    }
+      if (process.env.NODE_ENV !== 'production') {
+        this.logger.add(new winston.transports.Console({
+          format: winston.format.simple()
+        }));
+      }
 
-    this.validateConfiguration();
-    if (this.isConfigured) {
-      this.initializeClient();
+      this.validateConfiguration();
+      if (this.isConfigured) {
+        this.initializeClient();
+      }
+    } catch (error) {
+      console.warn('Error durante la inicialización de AzureOpenAIService:', error.message);
+      this.isConfigured = false;
+      this.logger = console; // Fallback al console si winston falla
     }
   }
 
   validateConfiguration() {
-    this.logger.info("Configuración de OpenAI cargada", {
-      endpoint: this.endpoint ? 'Configurado' : 'No configurado',
-      deployment: this.deployment ? 'Configurado' : 'No configurado',
-      apiVersion: this.apiVersion ? 'Configurado' : 'No configurado'
-    });
+    try {
+      this.logger.info("Configuración de OpenAI cargada", {
+        endpoint: this.endpoint ? 'Configurado' : 'No configurado',
+        deployment: this.deployment ? 'Configurado' : 'No configurado',
+        apiVersion: this.apiVersion ? 'Configurado' : 'No configurado'
+      });
 
-    if (!this.endpoint || !this.apiKey || !this.deployment) {
-      const missingVars = [];
-      if (!this.endpoint) missingVars.push('AZURE_OPENAI_ENDPOINT');
-      if (!this.apiKey) missingVars.push('AZURE_OPENAI_KEY');
-      if (!this.deployment) missingVars.push('AZURE_OPENAI_DEPLOYMENT_NAME');
-      
-      this.logger.warn("Variables de entorno de Azure OpenAI no configuradas - FAQ con IA no estará disponible", { missingVars });
+      if (!this.endpoint || !this.apiKey || !this.deployment) {
+        const missingVars = [];
+        if (!this.endpoint) missingVars.push('AZURE_OPENAI_ENDPOINT');
+        if (!this.apiKey) missingVars.push('AZURE_OPENAI_KEY');
+        if (!this.deployment) missingVars.push('AZURE_OPENAI_DEPLOYMENT_NAME');
+        
+        this.logger.error("Faltan variables de entorno críticas", { missingVars });
+        this.isConfigured = false;
+        return;
+      }
+
+      this.isConfigured = true;
+    } catch (error) {
+      console.warn('Error durante la validación de configuración de Azure OpenAI:', error.message);
       this.isConfigured = false;
-      return;
     }
-
-    this.isConfigured = true;
   }
 
   initializeClient() {
-    const options = {
-      endpoint: this.endpoint,
-      apiKey: this.apiKey,
-      deployment: this.deployment,
-      apiVersion: this.apiVersion
-    };
-    
-    this.client = new AzureOpenAI(options);
+    try {
+      const options = {
+        endpoint: this.endpoint,
+        apiKey: this.apiKey,
+        deployment: this.deployment,
+        apiVersion: this.apiVersion
+      };
+      
+      this.client = new AzureOpenAI(options);
+    } catch (error) {
+      console.warn('Error al inicializar cliente de Azure OpenAI:', error.message);
+      this.isConfigured = false;
+      this.client = null;
+    }
   }
 
   async generateResponse(messages, question, context = "") {

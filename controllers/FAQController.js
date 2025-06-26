@@ -4,7 +4,19 @@ import AzureOpenAIService from '../services/AzureOpenAIService.js';
 class FAQController {
   constructor() {
     this.faqModel = new FAQ();
-    this.openAIService = new AzureOpenAIService();
+    this.openAIService = null; // Inicialización lazy
+  }
+
+  getOpenAIService() {
+    if (!this.openAIService) {
+      try {
+        this.openAIService = new AzureOpenAIService();
+      } catch (error) {
+        console.warn('Azure OpenAI Service no pudo inicializarse:', error.message);
+        this.openAIService = { isConfigured: false };
+      }
+    }
+    return this.openAIService;
   }
 
   async askQuestion(req, res) {
@@ -24,8 +36,11 @@ class FAQController {
         });
       }
 
+      // Obtener el servicio de OpenAI (inicialización lazy)
+      const openAIService = this.getOpenAIService();
+
       // Verificar si Azure OpenAI está configurado
-      if (!this.openAIService.isConfigured) {
+      if (!openAIService.isConfigured) {
         return res.status(503).json({
           error: "Servicio de FAQ con IA no disponible",
           message: "El servicio de inteligencia artificial para preguntas frecuentes no está configurado actualmente. Por favor, contacta al administrador del sistema.",
@@ -37,7 +52,7 @@ class FAQController {
       const messages = this.faqModel.prepareMessages(sanitizedQuestion, context);
 
       // Generar respuesta usando Azure OpenAI
-      const answer = await this.openAIService.generateResponse(messages, sanitizedQuestion, context);
+      const answer = await openAIService.generateResponse(messages, sanitizedQuestion, context);
 
       // Guardar en caché
       this.faqModel.setCachedResponse(sanitizedQuestion, answer, context);
