@@ -1,393 +1,568 @@
-# CONTEXTO COMPLETO - PROYECTO SENAUNITY
+# CONTEXTO COMPLETO - PROYECTO SENAUNITY 2024 ⚡
 
-## 📁 ESTRUCTURA DEL PROYECTO
+## 📁 ESTRUCTURA ACTUAL DEL PROYECTO
 
 ```
-cursorProyect/
-├── backend/                    # Servidor Node.js/Express
-│   ├── SenaUnity/             # Frontend React (ubicado dentro del backend)
-│   ├── controllers/           # Controladores de rutas
-│   ├── models/               # Modelos de base de datos
-│   ├── routes/               # Definición de rutas API
-│   ├── middleware/           # Middlewares de autenticación/validación
-│   ├── services/             # Lógica de negocio
-│   ├── config/               # Configuraciones de DB y servidor
-│   ├── utils/                # Utilidades y helpers
-│   ├── uploads/              # Archivos subidos
-│   ├── scripts/              # Scripts de base de datos
-│   ├── server.js             # Punto de entrada del servidor
-│   ├── database.sql          # Esquema de base de datos
-│   └── package.json          # Dependencias del backend
-└── README.md
+cursorProyect/backend/
+├── SenaUnity/                 # Frontend React (Vite) - Ubicación dentro del backend
+│   ├── src/
+│   │   ├── components/        # Componentes reutilizables
+│   │   │   ├── Login/         # Autenticación
+│   │   │   ├── Register/      # Registro de usuarios
+│   │   │   ├── CarrerasTecnologicas/ # Gestión de carreras
+│   │   │   ├── CarrerasCortas/ # Carreras cortas
+│   │   │   ├── PermissionWrapper/ # Control de permisos
+│   │   │   ├── ProtectedRoute/ # Rutas protegidas
+│   │   │   ├── UI/            # Componentes de interfaz
+│   │   │   └── ...
+│   │   ├── Pages/             # Páginas principales
+│   │   │   ├── Home/          # Página de inicio
+│   │   │   ├── Admin/         # Panel de administración
+│   │   │   ├── EventosNoticias/ # Gestión de eventos y noticias
+│   │   │   ├── Profile/       # Perfiles de usuario
+│   │   │   ├── FAQ/           # Preguntas frecuentes con IA
+│   │   │   ├── Horarios/      # Gestión de horarios
+│   │   │   └── ...
+│   │   ├── services/          # Servicios para APIs
+│   │   ├── hooks/             # Hooks personalizados
+│   │   ├── Layouts/           # Layouts de la aplicación
+│   │   ├── constants/         # Constantes y configuraciones
+│   │   ├── assets/            # Recursos estáticos
+│   │   └── styles/            # Estilos adicionales
+│   ├── public/                # Archivos públicos
+│   ├── dist/                  # Build de producción
+│   ├── package.json           # Dependencias frontend
+│   ├── vite.config.js         # Configuración de Vite
+│   ├── tailwind.config.js     # Configuración de Tailwind
+│   └── ...
+├── controllers/               # Controladores de rutas API
+├── models/                   # Modelos de base de datos
+├── routes/                   # Definición de rutas API
+├── middleware/               # Middlewares de seguridad
+├── services/                 # Lógica de negocio y Azure OpenAI
+├── config/                   # Configuraciones de DB
+├── utils/                    # Utilidades y validaciones
+├── uploads/                  # Archivos subidos
+├── scripts/                  # Scripts de base de datos
+├── server.js                 # Servidor Express principal
+├── database_actualizado.sql  # Esquema actualizado de BD
+├── web.config               # Configuración IIS para producción
+└── package.json             # Dependencias backend
 ```
 
 ---
 
-## 🔧 BACKEND - Node.js/Express
+## 🔧 BACKEND - Node.js/Express/MySQL
 
-### UBICACIÓN Y CONFIGURACIÓN
-- **Directorio raíz**: `/backend/`
-- **Punto de entrada**: `server.js`
-- **Puerto**: 3000 (configurado en server.js)
-
-### TECNOLOGÍAS
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Base de datos**: SQL (MySQL/PostgreSQL)
+### CONFIGURACIÓN PARA PRODUCCIÓN
+- **Puerto**: 5000 (configurado en server.js)
+- **Base de datos**: MySQL con esquema actualizado
 - **Autenticación**: JWT + bcrypt
-- **Validación**: Express-validator
-- **CORS**: Configurado para frontend
-- **Logging**: Winston (combined.log, error.log)
+- **IA Integrada**: Azure OpenAI para FAQ
+- **Archivos**: Multer para upload de imágenes
+- **Despliegue**: Configurado para IIS con web.config
 
-### RESPONSABILIDADES DEL BACKEND
-- ✅ APIs REST para CRUD de usuarios, eventos, horarios
-- ✅ Autenticación y autorización de usuarios
-- ✅ Gestión de roles y permisos
-- ✅ Subida y gestión de archivos
-- ✅ Validación de datos del servidor
-- ✅ Conexión y consultas a base de datos
-- ✅ Middleware de seguridad y CORS
-- ✅ Logging y manejo de errores
+### TECNOLOGÍAS BACKEND
+- **Runtime**: Node.js >=18.0.0
+- **Framework**: Express.js 4.18+
+- **Base de datos**: MySQL2 3.6+
+- **Autenticación**: JWT + bcryptjs
+- **IA**: Azure OpenAI 4.20+
+- **Validación**: Password-validator
+- **Logging**: Winston
+- **Rate Limiting**: Express-rate-limit
+- **CORS**: Configurado para desarrollo y producción
 
-### ESTRUCTURA DE RUTAS API
+### NUEVAS FUNCIONALIDADES BACKEND
+- ✅ **Sistema de Roles y Permisos**: Administrador, Instructor, Aprendiz, Funcionario
+- ✅ **Panel de Administración**: Gestión completa de usuarios y permisos
+- ✅ **API de Instructores**: CRUD completo con calificaciones
+- ✅ **API de Publicaciones**: Eventos, noticias y carreras tecnológicas
+- ✅ **FAQ con IA**: Integración con Azure OpenAI para respuestas inteligentes
+- ✅ **Sistema de Validaciones**: Aprobación de usuarios y contenido
+- ✅ **Upload de Archivos**: Gestión segura de imágenes y documentos
+
+### ESTRUCTURA DE RUTAS API ACTUALIZADA
 ```
-/api/auth/*          # Autenticación (login, registro, logout)
-/api/usuarios/*      # Gestión de usuarios
-/api/eventos/*       # Gestión de eventos y noticias
-/api/horarios/*      # Gestión de horarios
-/api/admin/*         # Panel de administración
-/api/upload/*        # Subida de archivos
+/api/auth/*            # Autenticación (login, registro, logout)
+/api/users/*           # Gestión de usuarios y perfiles
+/api/publicaciones/*   # Eventos, noticias y carreras
+/api/instructores/*    # Gestión de instructores y calificaciones
+/api/permissions/*     # Sistema de permisos granular
+/api/faq/*            # Chat FAQ con IA Azure OpenAI
+/uploads/*            # Archivos estáticos (imágenes, documentos)
 ```
-
-### ARCHIVOS CLAVE DEL BACKEND
-- `server.js` - Configuración principal del servidor
-- `database.sql` - Esquema de base de datos
-- `package.json` - Dependencias del backend
-- `config/` - Configuraciones de conexión DB
-- `middleware/` - Autenticación y validaciones
-- `controllers/` - Lógica de controladores
-- `routes/` - Definición de endpoints
 
 ---
 
-## 🎨 FRONTEND - React/Vite
+## 🎨 FRONTEND - React 18/Vite/Tailwind CSS
 
-### UBICACIÓN Y CONFIGURACIÓN
-- **Directorio**: `/backend/SenaUnity/`
+### CONFIGURACIÓN PARA PRODUCCIÓN
 - **Puerto desarrollo**: 5173 (Vite dev server)
-- **Puerto producción**: Servido por Express en puerto 3000
+- **Puerto producción**: Servido por Express en puerto 5000
+- **Build**: Optimizado con Vite para producción
+- **Proxy**: Configurado para API backend
 
-### TECNOLOGÍAS
-- **Framework**: React 18
-- **Bundler**: Vite
-- **Enrutamiento**: React Router DOM v6
-- **Estilos**: Tailwind CSS + PostCSS
-- **HTTP**: Axios
-- **Animaciones**: Framer Motion, AOS
-- **Componentes**: Swiper, React PageFlip
-- **Linting**: ESLint
+### TECNOLOGÍAS FRONTEND ACTUALIZADAS
+- **Framework**: React 18.2+ con hooks modernos
+- **Bundler**: Vite 5.1+ (ultra rápido)
+- **Enrutamiento**: React Router DOM v6.22+
+- **Estilos**: Tailwind CSS 3.4+ con tema personalizado
+- **HTTP**: Axios 1.9+ con interceptors
+- **Animaciones**: Framer Motion 12.6+ y AOS 2.3+
+- **UI**: Swiper 11.2+ para carruseles
+- **Fuentes**: Google Fonts (Poppins)
+- **Optimización**: Sharp para optimización de imágenes
 
-### RESPONSABILIDADES DEL FRONTEND
-- ✅ Interfaz de usuario responsive
-- ✅ Enrutamiento del lado del cliente
-- ✅ Gestión de estado local de componentes
-- ✅ Consumo de APIs del backend
-- ✅ Autenticación visual y protección de rutas
-- ✅ Formularios y validación del cliente
-- ✅ Experiencia de usuario (UX/UI)
-- ✅ Optimización de imágenes y recursos
+### NUEVAS FUNCIONALIDADES FRONTEND
+- ✅ **Sistema de Autenticación Visual**: Login/registro con validación
+- ✅ **Panel de Administración Completo**: Gestión de usuarios, roles y permisos
+- ✅ **Rutas Protegidas**: ProtectedRoute con verificación de permisos
+- ✅ **Gestión de Carreras**: Tecnológicas y cortas con CRUD completo
+- ✅ **Sistema de Calificaciones**: Modal interactivo con estrellas
+- ✅ **Chat FAQ Inteligente**: Bot con IA para respuestas automáticas
+- ✅ **Diseño Responsivo**: Optimizado para móvil, tablet y desktop
+- ✅ **Tema SENA**: Colores oficiales y gradientes corporativos
 
-### ESTRUCTURA DE RUTAS FRONTEND
+### ESTRUCTURA DE RUTAS FRONTEND ACTUALIZADA
 ```
-/                    # Página de inicio
-/LoginPage          # Inicio de sesión
-/register           # Registro
-/profile            # Perfil de usuario
-/eventos            # Lista de eventos/noticias
-/evento/:id         # Detalle de evento
-/noticia/:id        # Detalle de noticia
-/faq                # Preguntas frecuentes
-/horarios           # Gestión de horarios
-/carreras-tecnologicas  # Información de carreras
-/admin              # Panel de administración (protegido)
+/                          # Página de inicio con hero y secciones
+/LoginPage                # Inicio de sesión con validación
+/register                 # Registro de usuarios
+/profile                  # Perfil con edición de datos
+/eventos-y-noticias       # Hub principal de contenido
+/eventos                  # Lista de eventos con filtros
+/noticias                 # Lista de noticias con filtros
+/evento/:id              # Detalle completo de evento
+/noticia/:id             # Detalle completo de noticia
+/carreras-tecnologicas   # Carreras tecnológicas
+/carreras-cortas         # Carreras cortas
+/carrera/:id            # Detalle de carrera específica
+/crear-evento           # Formulario creación evento
+/crear-noticia          # Formulario creación noticia
+/crear-carrera          # Formulario creación carrera
+/faq                    # FAQ con chat inteligente
+/horarios               # Gestión de horarios académicos
+/admin                  # Panel administrativo (protegido)
+/admin/validaciones     # Validación de contenido (admin only)
 ```
-
-### ARCHIVOS CLAVE DEL FRONTEND
-- `src/App.jsx` - Componente principal y rutas
-- `src/main.jsx` - Punto de entrada React
-- `package.json` - Dependencias del frontend
-- `vite.config.js` - Configuración de Vite
-- `tailwind.config.js` - Configuración de Tailwind
-- `src/Pages/` - Componentes de páginas
-- `src/components/` - Componentes reutilizables
-- `src/services/` - Servicios para APIs
 
 ---
 
-## 🎯 PLANTILLAS DE PROMPTS
+## 🔐 SISTEMA DE ROLES Y PERMISOS
+
+### ROLES DEFINIDOS
+```javascript
+ROLES = {
+  ADMINISTRADOR: 'Administrador',  // Acceso total al sistema
+  INSTRUCTOR: 'Instructor',        // Gestión de formación
+  APRENDIZ: 'Aprendiz',           // Acceso estudiante
+  FUNCIONARIO: 'Funcionario'       // Personal administrativo
+}
+```
+
+### PERMISOS GRANULARES
+```javascript
+PERMISOS = {
+  // Publicaciones
+  CREAR_EVENTO, CREAR_NOTICIA, CREAR_CARRERA,
+  EDITAR_PUBLICACION, ELIMINAR_PUBLICACION, VER_PUBLICACION,
+  
+  // Usuarios
+  CREAR_USUARIO, EDITAR_USUARIO, ELIMINAR_USUARIO, VER_USUARIO,
+  
+  // Administración
+  ASIGNAR_ROLES, VER_ROLES,
+  ASIGNAR_PERMISOS, VER_PERMISOS,
+  APROBAR_USUARIOS, GESTIONAR_FORMACION, GESTIONAR_ENLACES
+}
+```
+
+### COMPONENTES DE PROTECCIÓN
+- **ProtectedRoute**: Verificación de autenticación y permisos
+- **PermissionWrapper**: Control granular de acceso a componentes
+- **AdminOnlyRoute**: Acceso exclusivo para administradores
+
+---
+
+## 🎯 PLANTILLAS DE PROMPTS ACTUALIZADAS
 
 ### 🔧 PARA BACKEND
 
-#### APIs y Endpoints
+#### APIs de Nuevas Funcionalidades
 ```
 [BACKEND] Necesito crear/modificar el endpoint [DESCRIPCIÓN] en [RUTA_API]
-- Ubicación: /controllers/ o /routes/
-- Debe incluir: validación, autenticación, manejo de errores
+- Controlador: /controllers/[NombreController].js
+- Ruta: /routes/[nombre].js
+- Modelo: /models/[Nombre].js
+- Autenticación: JWT middleware
+- Permisos: [PERMISO_REQUERIDO]
 - Base de datos: [CONSULTA_SQL si aplica]
 ```
 
-#### Base de Datos
+#### Integración con Azure OpenAI
 ```
-[BACKEND] Necesito modificar/crear la tabla [NOMBRE_TABLA] en la base de datos
-- Archivo: database.sql
-- Campos: [LISTA_CAMPOS]
-- Relaciones: [FOREIGN_KEYS si aplica]
-```
-
-#### Autenticación/Middleware
-```
-[BACKEND] Necesito implementar middleware para [FUNCIÓN]
-- Ubicación: /middleware/
-- Tipo: autenticación/validación/CORS/logging
-- Aplica a rutas: [RUTAS_ESPECIFICAS]
-```
-
-#### Servicios/Lógica de Negocio
-```
-[BACKEND] Necesito crear/modificar servicio para [FUNCIONALIDAD]
-- Ubicación: /services/
-- Interacción con: base de datos/APIs externas
-- Retorna: [FORMATO_RESPUESTA]
+[BACKEND] Necesito modificar/crear servicio de IA para [FUNCIÓN]
+- Ubicación: /services/AzureOpenAIService.js
+- Tipo: FAQ/Chat/Análisis
+- Configuración: Azure credentials en .env
+- Endpoint: [ENDPOINT_AZURE]
 ```
 
 ### 🎨 PARA FRONTEND
 
-#### Componentes React
+#### Componentes con Permisos
 ```
 [FRONTEND] Necesito crear/modificar el componente [NOMBRE_COMPONENTE]
-- Ubicación: /SenaUnity/src/components/ o /Pages/
-- Props necesarias: [LISTA_PROPS]
-- Estado: [VARIABLES_ESTADO]
-- Estilos: Tailwind CSS
+- Ubicación: /SenaUnity/src/components/[Categoria]/
+- Props: [LISTA_PROPS]
+- Permisos requeridos: [PERMISOS]
+- Estado: React hooks
+- Estilos: Tailwind CSS + tema SENA
+- Responsivo: mobile-first design
 ```
 
-#### Páginas/Rutas
+#### Páginas del Panel de Administración
 ```
-[FRONTEND] Necesito crear/modificar la página [NOMBRE_PAGINA]
-- Ruta: /[RUTA_URL]
-- Ubicación: /SenaUnity/src/Pages/
-- Protegida: sí/no
-- Consume API: [ENDPOINT_BACKEND]
-```
-
-#### Estilos/UI
-```
-[FRONTEND] Necesito modificar el diseño/estilos de [COMPONENTE/PAGINA]
-- Usar: Tailwind CSS
-- Responsive: móvil/tablet/desktop
-- Animaciones: Framer Motion/AOS si necesario
-```
-
-#### Servicios/API Calls
-```
-[FRONTEND] Necesito crear/modificar servicio para consumir [API_ENDPOINT]
-- Ubicación: /SenaUnity/src/services/
-- Método HTTP: GET/POST/PUT/DELETE
-- Autenticación: JWT token si aplica
+[FRONTEND] Necesito crear/modificar página admin [NOMBRE_PAGINA]
+- Ruta protegida: /admin/[ruta]
+- Ubicación: /SenaUnity/src/Pages/Admin/
+- Permisos: [PERMISOS_ADMIN]
+- Servicios: [API_ENDPOINTS]
+- UI: Tablas, modales, formularios responsivos
 ```
 
 ---
 
-## ⚡ EJEMPLOS PRÁCTICOS
+## ⚡ CONFIGURACIÓN PARA PRODUCCIÓN
 
-### ✅ PROMPT CORRECTO PARA BACKEND
-```
-[BACKEND] Necesito crear un endpoint para obtener la lista de eventos con paginación
-- Ruta: GET /api/eventos
-- Ubicación: /controllers/eventosController.js
-- Parámetros: page, limit, categoria (opcional)
-- Respuesta: {eventos: [], total: number, page: number}
-- Incluir autenticación JWT
-```
+### Configuración Backend (server.js)
+```javascript
+// Puerto configurado para producción
+const PORT = process.env.PORT || 5000;
 
-### ✅ PROMPT CORRECTO PARA FRONTEND
-```
-[FRONTEND] Necesito crear una página para mostrar la lista de eventos
-- Ruta: /eventos
-- Ubicación: /SenaUnity/src/Pages/EventosNoticias/
-- Componente: EventosList.jsx
-- Consume: GET /api/eventos
-- UI: Cards responsivas con Tailwind, paginación, filtros
+// CORS configurado para desarrollo y producción
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+        ? 'https://tu-dominio.com' 
+        : 'http://localhost:5173',
+    credentials: true
+}));
+
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, 'SenaUnity/dist')));
 ```
 
-### ❌ PROMPT INCORRECTO (Mezcla responsabilidades)
+### Configuración Frontend (vite.config.js)
+```javascript
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',  // Backend API
+        changeOrigin: true
+      }
+    }
+  },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom']
+        }
+      }
+    }
+  }
+})
 ```
-Necesito crear una página de eventos que también maneje la base de datos
-❌ No especifica si es frontend o backend
-❌ Mezcla UI con lógica de base de datos
-❌ No especifica ubicaciones de archivos
+
+### Despliegue IIS (web.config)
+```xml
+<configuration>
+  <system.webServer>
+    <handlers>
+      <add name="iisnode" path="server.js" verb="*" modules="iisnode" />
+    </handlers>
+    <rewrite>
+      <rules>
+        <rule name="DynamicContent">
+          <action type="Rewrite" url="server.js" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>
 ```
+
+---
+
+## 🎨 DISEÑO Y TEMA SENA
+
+### Colores Corporativos
+```css
+:root {
+  --sena-green: #4ADE80;        /* Verde principal SENA */
+  --sena-green-dark: #22C55E;   /* Verde oscuro */
+  --accent-green: #BFFF71;      /* Verde claro accent */
+  --sena-orange: #FF7A00;       /* Naranja SENA */
+  --accent-teal: #25dfc4;       /* Azul verdoso */
+}
+```
+
+### Fuente Corporativa
+- **Primaria**: Poppins (Google Fonts)
+- **Pesos**: 300, 400, 500, 600, 700, 800, 900
+- **Uso**: Toda la aplicación con font-family configurada
+
+### Efectos Especiales
+- **Gradientes SENA**: Degradados verdes corporativos
+- **Glow Effects**: Efectos de brillo en botones
+- **Backdrop Blur**: Filtros para modales
+- **Animaciones**: Framer Motion para transiciones suaves
+
+---
+
+## 📱 RESPONSIVIDAD PROFESIONAL
+
+### Breakpoints Configurados
+```css
+/* Tailwind CSS breakpoints */
+sm: '640px',   /* Tablet pequeña */
+md: '768px',   /* Tablet */
+lg: '1024px',  /* Desktop */
+xl: '1280px',  /* Desktop grande */
+2xl: '1536px'  /* Desktop extra grande */
+
+/* Breakpoint personalizado */
+xs: '375px'    /* Móvil pequeño */
+```
+
+### Clases Responsivas Implementadas
+- **Layout**: Grid y Flexbox responsivos
+- **Tipografía**: Escalas de texto adaptativas
+- **Espaciado**: Padding y margin responsivos
+- **Componentes**: Cards, modales y formularios adaptativos
 
 ---
 
 ## 🔄 COMUNICACIÓN FRONTEND ↔ BACKEND
 
-### APIs CONSUMIDAS POR EL FRONTEND
+### Servicios Frontend Organizados
 ```javascript
-// Ejemplo de servicios en frontend
-const API_BASE = 'http://localhost:3000/api';
+// /SenaUnity/src/services/
+auth.js              // Autenticación y tokens
+userService.js       // Gestión de usuarios
+publicaciones.js     // Eventos, noticias, carreras
+instructorService.js // Gestión de instructores
+calificacionService.js // Sistema de calificaciones
+faqService.js        // Chat FAQ con IA
+profile.js           // Perfiles de usuario
+config.js            // Configuración base de APIs
+```
 
+### APIs Backend Implementadas
+```javascript
 // Autenticación
 POST /api/auth/login
 POST /api/auth/register
 POST /api/auth/logout
+GET  /api/auth/verify
 
-// Usuarios
-GET /api/usuarios/profile
-PUT /api/usuarios/profile
+// Usuarios y Perfiles
+GET    /api/users/profile
+PUT    /api/users/profile
+GET    /api/users/
+POST   /api/users/
+DELETE /api/users/:id
 
-// Eventos
-GET /api/eventos
-GET /api/eventos/:id
-POST /api/eventos (admin)
+// Publicaciones
+GET    /api/publicaciones/
+POST   /api/publicaciones/
+PUT    /api/publicaciones/:id
+DELETE /api/publicaciones/:id
 
-// Horarios
-GET /api/horarios
-POST /api/horarios
+// Instructores
+GET    /api/instructores/
+POST   /api/instructores/
+PUT    /api/instructores/:id
+DELETE /api/instructores/:id
+
+// FAQ con IA
+POST   /api/faq/chat
+GET    /api/faq/
+
+// Permisos
+GET    /api/permissions/
+POST   /api/permissions/assign
 ```
 
 ---
 
-## 🚫 REGLAS DE NO INTERFERENCIA
+## 🚀 COMANDOS DE DESARROLLO Y PRODUCCIÓN
 
-### NO mezclar responsabilidades:
-- ❌ Lógica de negocio en componentes React
-- ❌ Validación de datos solo en frontend
-- ❌ Estilos CSS en archivos del backend
-- ❌ Configuraciones de servidor en archivos de Vite
-
-### SÍ mantener separación:
-- ✅ Backend: APIs, autenticación, base de datos
-- ✅ Frontend: UI, UX, enrutamiento del cliente
-- ✅ Comunicación via HTTP/REST únicamente
-- ✅ Validación en ambos lados (cliente y servidor)
-
----
-
-## 📋 CHECKLIST DE PROMPTS
-
-### Antes de hacer un prompt, verificar:
-
-**Para Backend:**
-- [ ] ¿Es una API/endpoint?
-- [ ] ¿Involucra base de datos?
-- [ ] ¿Es autenticación/middleware?
-- [ ] ¿Es lógica de negocio?
-- [ ] Especificar archivo de destino
-
-**Para Frontend:**
-- [ ] ¿Es un componente React?
-- [ ] ¿Es una página/ruta?
-- [ ] ¿Es estilo/diseño?
-- [ ] ¿Consume una API?
-- [ ] Especificar directorio de destino
-
----
-
-## 🚨 ERRORES COMUNES A EVITAR
-
-### ❌ NO HACER:
-```
-"Crear una función de login"
-→ Muy vago, no especifica frontend o backend
-
-"Modificar estilos en el servidor"
-→ Los estilos van en frontend, no backend
-
-"Agregar validación solo en React"
-→ La validación debe estar en ambos lados
-
-"Crear componente que haga consultas SQL"
-→ Los componentes React no deben hacer SQL directamente
-```
-
-### ✅ SÍ HACER:
-```
-"[BACKEND] Crear endpoint POST /api/auth/login en /controllers/authController.js"
-
-"[FRONTEND] Crear componente LoginForm.jsx en /SenaUnity/src/components/Login/"
-
-"[BACKEND] Agregar validación de email en middleware de registro"
-
-"[FRONTEND] Crear servicio authService.js para consumir APIs de autenticación"
-```
-
----
-
-## 📝 COMANDOS DE DESARROLLO
-
-### Para trabajar en Backend
+### Desarrollo Backend
 ```bash
-# Ubicarse en directorio correcto
 cd backend
-
-# Instalar dependencias
 npm install
-
-# Ejecutar en desarrollo
-npm run dev
-
-# Revisar logs
-tail -f combined.log
+npm run dev          # Desarrollo con nodemon
+npm run start        # Producción
 ```
 
-### Para trabajar en Frontend
+### Desarrollo Frontend
 ```bash
-# Ubicarse en directorio correcto
 cd backend/SenaUnity
-
-# Instalar dependencias
 npm install
+npm run dev          # Servidor de desarrollo Vite
+npm run build        # Build para producción
+npm run preview      # Vista previa del build
+npm run optimize-images  # Optimizar imágenes
+```
 
-# Ejecutar en desarrollo
-npm run dev
-
-# Build para producción
+### Despliegue Completo
+```bash
+# 1. Build del frontend
+cd backend/SenaUnity
 npm run build
+
+# 2. El dist/ se sirve automáticamente por Express
+cd ../
+npm run start
 ```
 
 ---
 
-## 🎪 FLUJO DE TRABAJO RECOMENDADO
+## 📋 CHECKLIST PARA PRODUCCIÓN
 
-### 1. Para nuevas funcionalidades:
-1. **Primero Backend**: Crear API/endpoint
-2. **Luego Frontend**: Crear interfaz que consume la API
-3. **Testing**: Probar integración completa
+### ✅ Backend Preparado
+- [x] Puerto configurado (5000)
+- [x] CORS configurado para producción
+- [x] Variables de entorno (.env) configuradas
+- [x] Base de datos MySQL lista
+- [x] Azure OpenAI configurado
+- [x] Logs con Winston implementados
+- [x] Rate limiting activado
+- [x] Middleware de seguridad
+- [x] web.config para IIS
 
-### 2. Para modificaciones:
-1. **Identificar**: ¿Es problema de frontend o backend?
-2. **Ubicar**: ¿Qué archivo específico modificar?
-3. **Prompt**: Usar plantilla correspondiente
-4. **Verificar**: Que no afecte el otro lado
+### ✅ Frontend Optimizado
+- [x] Build de Vite optimizado
+- [x] Código minificado y chunked
+- [x] Imágenes optimizadas
+- [x] Fuentes cargadas eficientemente
+- [x] PWA ready (si aplicable)
+- [x] Responsive design validado
+- [x] Cross-browser compatibility
+- [x] Accesibilidad implementada
+
+### ✅ Seguridad Implementada
+- [x] Autenticación JWT segura
+- [x] Validación en backend y frontend
+- [x] Sanitización de inputs
+- [x] Rate limiting configurado
+- [x] CORS apropiado para producción
+- [x] Headers de seguridad
+- [x] Upload de archivos seguro
+
+### ✅ Performance Optimizada
+- [x] Lazy loading de componentes
+- [x] Code splitting implementado
+- [x] Imágenes optimizadas con Sharp
+- [x] Cache strategies
+- [x] Bundle size optimizado
+- [x] Tree shaking activado
 
 ---
 
-## 🎭 ROLES Y PERMISOS
+## 🚨 PUNTOS CRÍTICOS PARA PRODUCCIÓN
 
-### Sistema de autenticación implementado:
-- **Estudiante**: Acceso básico a eventos, horarios, perfil
-- **Instructor**: Gestión de horarios y eventos
-- **Administrador**: Acceso completo al panel de administración
+### ⚠️ Variables de Entorno (.env)
+```bash
+# Base de datos
+DB_HOST=tu-servidor-mysql
+DB_USER=tu-usuario
+DB_PASSWORD=tu-password-seguro
+DB_NAME=senaunity
 
-### Rutas protegidas:
-- Frontend: Componente `ProtectedRoute`
-- Backend: Middleware de autenticación JWT
+# JWT
+JWT_SECRET=tu-secret-super-seguro-aqui
+
+# Azure OpenAI
+AZURE_OPENAI_ENDPOINT=https://tu-endpoint.openai.azure.com/
+AZURE_OPENAI_API_KEY=tu-api-key
+
+# Producción
+NODE_ENV=production
+PORT=5000
+```
+
+### ⚠️ URLs de Producción
+- Actualizar URLs en services/config.js
+- Configurar CORS para dominio de producción
+- Verificar certificados SSL/HTTPS
+
+### ⚠️ Base de Datos
+- Ejecutar database_actualizado.sql
+- Configurar backups automáticos
+- Verificar permisos de usuario DB
 
 ---
 
-## 📌 NOTAS IMPORTANTES
+## 💡 MEJORES PRÁCTICAS IMPLEMENTADAS
 
-**ESTRUCTURA ESPECIAL**: Este proyecto tiene el frontend ubicado DENTRO del directorio del backend (`/backend/SenaUnity/`). Es una estructura monorepo donde ambos proyectos coexisten pero mantienen sus responsabilidades separadas.
+### Arquitectura
+- **Separación de responsabilidades**: Frontend/Backend bien separados
+- **Modularidad**: Componentes y servicios reutilizables
+- **Escalabilidad**: Estructura preparada para crecimiento
 
-**💡 CONSEJO**: Siempre especifica `[FRONTEND]` o `[BACKEND]` al inicio de tus prompts para evitar confusiones y obtener ayuda más precisa. 
+### Código
+- **Clean Code**: Nomenclatura clara y consistente
+- **Reusabilidad**: Componentes y hooks reutilizables
+- **Performance**: Optimizaciones implementadas
+
+### UX/UI
+- **Mobile First**: Diseño responsivo prioritario
+- **Accesibilidad**: ARIA labels y navegación por teclado
+- **Loading States**: Indicadores de carga apropiados
+- **Error Handling**: Manejo elegante de errores
+
+---
+
+## 🎪 FLUJO DE TRABAJO PARA NUEVAS FEATURES
+
+### 1. Backend First
+1. Definir endpoint en `/routes/`
+2. Crear controlador en `/controllers/`
+3. Implementar modelo en `/models/` (si necesario)
+4. Agregar middleware de validación
+5. Probar con Postman/Thunder Client
+
+### 2. Frontend Integration
+1. Crear servicio en `/services/`
+2. Implementar componente en `/components/` o página en `/Pages/`
+3. Agregar rutas en `App.jsx`
+4. Aplicar permisos con ProtectedRoute
+5. Estilizar con Tailwind CSS + tema SENA
+
+### 3. Testing & Deployment
+1. Probar responsividad en diferentes dispositivos
+2. Validar permisos y roles
+3. Verificar performance
+4. Build y deploy
+
+---
+
+## 📌 NOTAS IMPORTANTES ACTUALIZADAS
+
+**ESTRUCTURA MONOREPO**: El frontend SenaUnity está ubicado dentro de `/backend/SenaUnity/`. Esta estructura permite un despliegue simplificado donde Express sirve tanto la API como el frontend construido.
+
+**SISTEMA DE PERMISOS**: Implementado sistema granular de permisos que permite control fino sobre cada funcionalidad del sistema.
+
+**IA INTEGRADA**: Azure OpenAI está completamente integrado para el sistema FAQ, proporcionando respuestas inteligentes y contextual.
+
+**LISTO PARA PRODUCCIÓN**: El proyecto incluye todas las configuraciones necesarias para despliegue en IIS con web.config, variables de entorno, y optimizaciones de performance.
+
+**💡 CONSEJO**: Siempre especifica `[FRONTEND]` o `[BACKEND]` al inicio de tus prompts para obtener ayuda específica y mantener la separación de responsabilidades. 
