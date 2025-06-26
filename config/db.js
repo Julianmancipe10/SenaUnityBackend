@@ -14,7 +14,10 @@ const pool = mysql.createPool({
     queueLimit: 0,
     connectTimeout: 60000,
     enableKeepAlive: true,
-    keepAliveInitialDelay: 10000
+    keepAliveInitialDelay: 10000,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Función para verificar la conexión con reintentos
