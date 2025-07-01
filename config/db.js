@@ -10,14 +10,19 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME || 'senaunity',
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 15,
     queueLimit: 0,
-    connectTimeout: 60000,
+    connectTimeout: 90000,
+    acquireTimeout: 90000,
+    timeout: 90000,
     enableKeepAlive: true,
     keepAliveInitialDelay: 10000,
+    reconnect: true,
     ssl: {
         rejectUnauthorized: false
-    }
+    },
+    charset: 'utf8mb4',
+    timezone: 'Z'
 });
 
 // Función para verificar la conexión con reintentos

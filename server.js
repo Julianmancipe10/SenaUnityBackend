@@ -2,10 +2,12 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 import express from 'express';
 import cors from 'cors';
+import { apiLimiter } from './middleware/rateLimiter.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import faqRoute from './routes/faq.js';
@@ -39,31 +41,43 @@ const corsOptions = {
         // Permitir requests sin origin (como Postman, healthchecks, etc.)
         if (!origin) return callback(null, true);
         
+        // Lista de dominios permitidos
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'https://localhost:5173',
+            'https://senaunitybackend-production.up.railway.app',
+            'https://senaunity-frontend.netlify.app', // Si tienes frontend separado
+            'https://senaunity.up.railway.app', // Si el frontend está en Railway
+            process.env.FRONTEND_URL, // Tu dominio de frontend en producción
+        ].filter(Boolean); // Filtrar valores undefined
+        
         // En desarrollo, permitir localhost
         if (process.env.NODE_ENV !== 'production') {
             return callback(null, true);
         }
         
-        // En producción, permitir dominios específicos
-        const allowedOrigins = [
-            'http://localhost:5173',
-            'https://localhost:5173',
-            process.env.FRONTEND_URL, // Tu dominio de frontend en producción
-        ].filter(Boolean); // Filtrar valores undefined
-        
-        if (allowedOrigins.includes(origin)) {
+        // En producción, permitir dominios específicos + todos temporalmente para debugging
+        if (allowedOrigins.includes(origin) || true) { // Permitir todos temporalmente
             callback(null, true);
         } else {
-            callback(null, true); // Permitir todos por ahora para solucionar el healthcheck
+            console.log('CORS blocked origin:', origin);
+            callback(new Error('No permitido por CORS'));
         }
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(join(__dirname, 'uploads')));
+
+// Aplicar rate limiting general
+if (process.env.NODE_ENV === 'production') {
+    app.use('/api', apiLimiter);
+}
 
 // Routes
 app.get('/', (req, res) => {
@@ -85,6 +99,20 @@ app.use('/api/faq', faqRoute);
 app.use('/api/permissions', permissionsRoutes);
 app.use('/api/publicaciones', publicacionesRoutes);
 app.use('/api/instructores', instructoresRoutes);
+
+// Servir el frontend de React en producción
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = join(__dirname, 'SenaUnity', 'dist');
+  app.use(express.static(clientBuildPath));
+  app.get('*', (req, res) => {
+    // Si la ruta no es API ni uploads, servir index.html
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.sendFile(join(clientBuildPath, 'index.html'));
+    } else {
+      res.status(404).json({ message: 'No encontrado' });
+    }
+  });
+}
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
