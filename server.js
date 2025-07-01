@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 import express from 'express';
@@ -98,6 +99,20 @@ app.use('/api/faq', faqRoute);
 app.use('/api/permissions', permissionsRoutes);
 app.use('/api/publicaciones', publicacionesRoutes);
 app.use('/api/instructores', instructoresRoutes);
+
+// Servir el frontend de React en producción
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = join(__dirname, 'SenaUnity', 'dist');
+  app.use(express.static(clientBuildPath));
+  app.get('*', (req, res) => {
+    // Si la ruta no es API ni uploads, servir index.html
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.sendFile(join(clientBuildPath, 'index.html'));
+    } else {
+      res.status(404).json({ message: 'No encontrado' });
+    }
+  });
+}
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
