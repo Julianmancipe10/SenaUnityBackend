@@ -45,11 +45,22 @@ class AuthController {
         });
       }
     } catch (error) {
+      // Manejo mejorado de errores
       if (error.status === 400) {
         return res.status(400).json(error);
       }
+      // Errores de MySQL: duplicidad de correo/documento
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(400).json({ message: 'El correo o documento ya está registrado.' });
+      }
+      // Otros errores de la base de datos
+      if (error.sqlMessage) {
+        console.error('Error SQL en el registro:', error.sqlMessage);
+        return res.status(500).json({ message: 'Error en la base de datos', detalle: error.sqlMessage });
+      }
+      // Log detallado para depuración
       console.error('Error en el registro:', error);
-      res.status(500).json({ message: 'Error en el servidor' });
+      res.status(500).json({ message: 'Error en el servidor', detalle: error.message });
     }
   }
 
