@@ -96,9 +96,9 @@ class PublicacionController {
       const { titulo, fecha, descripcion, ubicacion, enlace } = req.body;
       const userId = req.user.id;
 
-      // Verificar que hay al menos una imagen
-      if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ message: 'Al menos una imagen es requerida' });
+      // Verificar que hay imagen
+      if (!req.file) {
+        return res.status(400).json({ message: 'La imagen es requerida' });
       }
 
       // Crear publicación tipo noticia (2)
@@ -115,11 +115,9 @@ class PublicacionController {
 
       const noticiaId = await Publicacion.create(publicacionData);
 
-      // Agregar todas las imágenes al slider
-      for (let i = 0; i < req.files.length; i++) {
-        const imagenPath = `/uploads/publicaciones/${req.files[i].filename}`;
-        await Publicacion.addSliderImage(noticiaId, imagenPath, titulo);
-      }
+      // Agregar imagen al slider
+      const imagenPath = `/uploads/publicaciones/${req.file.filename}`;
+      await Publicacion.addSliderImage(noticiaId, imagenPath, titulo);
 
       res.status(201).json({
         message: 'Noticia creada exitosamente',
@@ -128,7 +126,7 @@ class PublicacionController {
           titulo,
           fecha,
           descripcion,
-          imagenes: req.files.map(file => `/uploads/publicaciones/${file.filename}`)
+          imagen: imagenPath
         }
       });
     } catch (error) {

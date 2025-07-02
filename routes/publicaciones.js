@@ -15,7 +15,7 @@ router.post('/eventos',
 router.post('/noticias', 
   authenticateToken, 
   checkPermission('crear_noticia'),
-  PublicacionController.upload.array('imagenes', 4),
+  PublicacionController.upload.single('imagen'),
   PublicacionController.createNoticia
 );
 
