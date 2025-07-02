@@ -6,7 +6,7 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 
 // Ruta para el registro de usuarios
-router.post('/register', registerLimiter, AuthController.register);
+router.post('/register', AuthController.register);
 
 // Ruta para el inicio de sesión
 router.post('/login', loginLimiter, AuthController.login);
