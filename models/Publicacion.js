@@ -91,23 +91,13 @@ class Publicacion {
 
   // Actualizar imagen existente en el slider
   static async updateSliderImage(eventoId, imagenPath, descripcion = null) {
-    // Primero verificar si ya existe una imagen para este evento
-    const [existing] = await pool.promise().query(
-      `SELECT ID_Slider FROM slider WHERE evento_ID_Evento = ? LIMIT 1`,
+    // Eliminar todas las imágenes anteriores del slider para este evento
+    await pool.promise().query(
+      `DELETE FROM slider WHERE evento_ID_Evento = ?`,
       [eventoId]
     );
-
-    if (existing.length > 0) {
-      // Actualizar imagen existente
-      const [result] = await pool.promise().query(
-        `UPDATE slider SET Imagen = ?, Descripción = ? WHERE evento_ID_Evento = ?`,
-        [imagenPath, descripcion, eventoId]
-      );
-      return result.affectedRows > 0;
-    } else {
-      // Si no existe, crear nueva entrada
-      return await this.addSliderImage(eventoId, imagenPath, descripcion);
-    }
+    // Insertar la nueva imagen
+    return await this.addSliderImage(eventoId, imagenPath, descripcion);
   }
 
   // Actualizar publicación
