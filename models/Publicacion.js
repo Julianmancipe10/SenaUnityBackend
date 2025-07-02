@@ -118,7 +118,8 @@ class Publicacion {
     // Mapear campos del frontend a nombres de la base de datos
     const fieldMap = {
       'Nombre': 'Nombre',
-      'Descripción': 'Descripción', 
+      'Descripción': 'Descripción',
+      'Descripcion': 'Descripción',
       'URL_Enlace': 'URL_Enlace',
       'Ubicacion': 'Ubicacion',
       'Fecha': 'Fecha'

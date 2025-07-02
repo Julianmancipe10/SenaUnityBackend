@@ -259,6 +259,7 @@ class PublicacionController {
     try {
       const { id } = req.params;
       const updateData = req.body;
+      console.log('Datos recibidos para actualizar publicación:', updateData);
 
       // Si hay nueva imagen, actualizarla en el slider (no agregar nueva)
       if (req.file) {
